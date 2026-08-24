@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  name          String?
+  email         String         @unique
+  passwordHash  String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  files         File[]
+  folders       Folder[]
+  refreshTokens RefreshToken[]
+}
+
+model Folder {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  parentId  String?  @db.Uuid
+  ownerId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  parent    Folder?  @relation("FolderToFolder", fields: [parentId], references: [id])
+  children  Folder[] @relation("FolderToFolder")
+  files     File[]
+  owner     User     @relation(fields: [ownerId], references: [id])
+}
+
+enum FileVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+model File {
+  id         String         @id @default(uuid()) @db.Uuid
+  folderId   String?        @db.Uuid
+  ownerId    Int
+  name       String
+  storageKey String
+  size       BigInt
+  mimeType   String
+  visibility FileVisibility @default(PRIVATE)
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  folder     Folder?        @relation(fields: [folderId], references: [id])
+  owner      User           @relation(fields: [ownerId], references: [id])
+  fileShares FileShare[]
+}
+
+model FileShare {
+  id        String    @id @default(uuid()) @db.Uuid
+  fileId    String    @db.Uuid
+  token     String    @unique @db.Uuid
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expiresAt DateTime?
+  file      File      @relation(fields: [fileId], references: [id])
+
+  @@index([token])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    Int
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([token])
+}
