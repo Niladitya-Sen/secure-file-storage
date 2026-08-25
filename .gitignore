@@ -50,3 +50,5 @@ backend/src/generated/prisma
 .claude
 .windsurf
 skills-lock.json
+
+/backend/storage

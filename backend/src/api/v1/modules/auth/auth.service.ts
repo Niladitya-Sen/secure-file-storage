@@ -1,7 +1,7 @@
-import BadRequestError from "../../common/errors/BadRequestError";
-import { generateToken } from "../../common/lib/jwt";
-import { prisma } from "../../common/lib/prisma";
-import { env } from "../../env";
+import BadRequestError from "../../../../common/errors/BadRequestError";
+import { generateToken } from "../../../../common/lib/jwt";
+import { prisma } from "../../../../common/lib/prisma";
+import { env } from "../../../../env";
 import type {
   LoginUserDto,
   RefreshTokenDto,
@@ -50,7 +50,7 @@ class AuthService {
     await prisma.refreshToken.create({
       data: {
         userId: newUser.id,
-        token: refreshToken.token,
+        token: refreshTokenHash,
         expiresAt: refreshToken.expiryTime,
       },
     });
@@ -154,7 +154,7 @@ class AuthService {
       .digest("hex");
 
     await prisma.refreshToken.update({
-      where: { token: data.refreshToken },
+      where: { token: refreshTokenHash },
       data: {
         token: newRefreshTokenHash,
         expiresAt: refreshToken.expiryTime,
@@ -168,8 +168,13 @@ class AuthService {
   }
 
   async logout(data: RefreshTokenDto) {
+    const refreshTokenHash = crypto
+      .createHash("sha256")
+      .update(data.refreshToken)
+      .digest("hex");
+
     const deletedToken = await prisma.refreshToken.deleteMany({
-      where: { token: data.refreshToken },
+      where: { token: refreshTokenHash },
     });
 
     if (deletedToken.count === 0) {

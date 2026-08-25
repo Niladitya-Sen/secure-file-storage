@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
+import QueryProvider from "@/components/providers/query-provider";
 
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -16,12 +17,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", "font-sans", dmSans.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        "font-sans",
+        dmSans.variable,
+        "dark",
+      )}
     >
-      <body className="min-h-full flex flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster />
-      </body>
+      <QueryProvider>
+        <body className="min-h-full flex flex-col">
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster />
+        </body>
+      </QueryProvider>
     </html>
   );
 }

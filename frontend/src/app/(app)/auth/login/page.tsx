@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -6,12 +8,50 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/store/auth-store";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import z from "zod";
+
+const LoginSchema = z.object({
+  email: z.email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
 
 export default function Login() {
+  const form = useForm({
+    resolver: zodResolver(LoginSchema),
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const login = useAuth((state) => state.login);
+  const router = useRouter();
+
+  async function onSubmit(data: z.infer<typeof LoginSchema>) {
+    try {
+      setIsSubmitting(true);
+      const success = await login(data);
+
+      if (success) {
+        router.replace("/drive");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
@@ -25,25 +65,56 @@ export default function Login() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form className={cn("flex flex-col gap-6")}>
+            <form
+              className="flex flex-col gap-6"
+              onSubmit={form.handleSubmit(onSubmit)}
+            >
               <FieldGroup>
+                <Controller
+                  name="email"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="email">Email</FieldLabel>
+                      <Input
+                        {...field}
+                        id="email"
+                        type="email"
+                        aria-invalid={fieldState.invalid}
+                        placeholder="user@example.com"
+                        required
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
+                <Controller
+                  name="password"
+                  control={form.control}
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <FieldLabel htmlFor="password">Password</FieldLabel>
+                      <Input
+                        {...field}
+                        id="password"
+                        type="password"
+                        aria-invalid={fieldState.invalid}
+                        placeholder="••••••••"
+                        required
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
+                  )}
+                />
                 <Field>
-                  <FieldLabel htmlFor="email">Email</FieldLabel>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="m@example.com"
-                    required
-                  />
-                </Field>
-                <Field>
-                  <div className="flex items-center">
-                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                  </div>
-                  <Input id="password" type="password" required />
-                </Field>
-                <Field>
-                  <Button type="submit">Log in</Button>
+                  <Button disabled={isSubmitting} type="submit">
+                    {isSubmitting && <Spinner />}
+                    {isSubmitting ? "Logging in..." : "Log in"}
+                  </Button>
                   <p className="text-sm text-muted-foreground text-center">
                     Don't have an account?{" "}
                     <Link

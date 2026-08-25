@@ -1,15 +1,15 @@
 import { Router } from "express";
-import { validateRequest } from "../../common/middleware/validate-request";
+import { validateRequest } from "../../../../common/middleware/validate-request";
 import { LoginUserSchema, RegisterUserSchema } from "./auth.validator";
-import type { ValidatedRequest } from "../../common/types/validated-request";
+import type { ValidatedRequest } from "../../../../common/types/validated-request";
 import { authService } from "./auth.service";
-import validateJwt from "../../common/middleware/validate-jwt";
-import { env } from "../../env";
+import validateJwt from "../../../../common/middleware/validate-jwt";
+import { env } from "../../../../env";
 
 const authController = Router();
 
 authController.post(
-  "/register",
+  "/signup",
   validateRequest({ body: RegisterUserSchema }),
   async (
     req: ValidatedRequest<undefined, undefined, typeof RegisterUserSchema>,
@@ -73,12 +73,15 @@ authController.post("/logout", validateJwt, async (req, res) => {
 
 authController.post("/refresh-token", async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
+
+  console.log(refreshToken);
+
   if (!refreshToken) {
     return res.status(400).json({ message: "Refresh token is required" });
   }
 
   const { accessToken, refreshToken: newRefreshToken } =
-    await authService.refreshToken(refreshToken);
+    await authService.refreshToken({ refreshToken });
 
   res.cookie("refreshToken", newRefreshToken, {
     httpOnly: true,
