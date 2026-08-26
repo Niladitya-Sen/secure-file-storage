@@ -9,3 +9,7 @@ export const BulkUploadFolderSchema = z.object({
     .string()
     .transform((val) => JSON.parse(val) as Record<string, string>),
 });
+
+export const ViewFileSchema = z.object({
+  fileId: z.string(),
+});

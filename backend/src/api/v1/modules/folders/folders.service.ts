@@ -6,6 +6,7 @@ import type {
   CreateFolderDto,
   ListFolderContentsDto,
 } from "./folders.dto";
+import { env } from "../../../../env";
 
 class FolderService {
   async createFolder(data: CreateFolderDto): Promise<void> {
@@ -162,7 +163,14 @@ class FolderService {
       }),
     ]);
 
-    return { path: folderId ? folder?.path : [], folders, files };
+    return {
+      path: folderId ? folder?.path : [],
+      folders,
+      files: files.map((file) => ({
+        ...file,
+        url: `/files/${file.id}/view`,
+      })),
+    };
   }
 }
 

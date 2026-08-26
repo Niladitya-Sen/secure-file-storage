@@ -35,11 +35,9 @@ export default class LocalStorageService implements StorageService {
     await fs.unlink(filePath);
   }
 
-  async exists(key: string): Promise<boolean> {
-    const filePath = path.join(LocalStorageService.rootDir, key);
-
+  async exists(path: string): Promise<boolean> {
     const childExists = await fs
-      .access(filePath)
+      .access(path)
       .then(() => true)
       .catch(() => false);
 

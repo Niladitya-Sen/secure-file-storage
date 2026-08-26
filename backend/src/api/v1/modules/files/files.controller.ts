@@ -3,7 +3,11 @@ import multer from "multer";
 import { validateRequest } from "../../../../common/middleware/validate-request";
 import type { ValidatedRequest } from "../../../../common/types/validated-request";
 import { fileService } from "./files.service";
-import { BulkUploadFolderSchema, UploadFilesSchema } from "./files.validator";
+import {
+  BulkUploadFolderSchema,
+  UploadFilesSchema,
+  ViewFileSchema,
+} from "./files.validator";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -67,6 +71,29 @@ filesController.post(
     });
 
     return res.status(201).json({ message: "Files uploaded successfully" });
+  },
+);
+
+filesController.get(
+  "/:fileId/view",
+  validateRequest({ params: ViewFileSchema }),
+  async (
+    req: ValidatedRequest<typeof ViewFileSchema, undefined, undefined>,
+    res,
+  ) => {
+    const { fileId } = req.validatedParams!;
+    const userId = req.user?.id!;
+
+    const file = await fileService.getFile(fileId, userId);
+
+    console.log(file.file);
+
+    res.setHeader("Content-Type", file.file.mimeType);
+    res.setHeader(
+      "Content-Disposition",
+      `inline; filename="${file.file.name}"`,
+    );
+    res.send(file.buffer);
   },
 );
 
