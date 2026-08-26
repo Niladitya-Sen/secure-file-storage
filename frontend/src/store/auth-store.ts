@@ -6,7 +6,10 @@ import authFetch from "@/lib/auth-fetch";
 type UseAuthStore = {
   isAuthenticated: boolean;
   isAuthLoading: boolean;
-  user: any | null;
+  user: {
+    id: number;
+    email: string;
+  } | null;
   accessToken: string | null;
   isRefreshing: boolean;
   signup: (credentials: {
@@ -14,7 +17,7 @@ type UseAuthStore = {
     password: string;
   }) => Promise<boolean>;
   login: (credentials: { email: string; password: string }) => Promise<boolean>;
-  logout: () => Promise<void>;
+  logout: () => Promise<boolean>;
   getCurrentUser: () => Promise<void>;
   refreshToken: () => Promise<boolean>;
 };
@@ -95,7 +98,7 @@ export const useAuth = create<UseAuthStore>((set) => ({
   },
 
   async logout() {
-    const response = await fetch(`${env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+    const [_, error] = await authFetch(`/auth/logout`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -103,14 +106,23 @@ export const useAuth = create<UseAuthStore>((set) => ({
       credentials: "include",
     });
 
-    if (response.ok) {
+    if (!error) {
       set({ isAuthenticated: false, user: null, accessToken: null });
       window.cookieStore.delete("accessToken");
       toast.add({
         title: "Logout Successful",
         description: "You have been logged out.",
       });
+
+      return true;
     }
+
+    toast.add({
+      title: "Logout Failed",
+      description: error.message || "An error occurred during logout.",
+    });
+
+    return false;
   },
 
   async refreshToken() {

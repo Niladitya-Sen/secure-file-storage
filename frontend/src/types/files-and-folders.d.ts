@@ -1,6 +1,9 @@
+type PathSegment = { name: string; id: string };
+
 type Folder = {
   name: string;
   id: string;
+  path: PathSegment[];
   createdAt: string;
 };
 
@@ -16,6 +19,7 @@ type File_ = {
 };
 
 type FolderContents = {
+  path: PathSegment[];
   folders: Folder[];
   files: File_[];
 };

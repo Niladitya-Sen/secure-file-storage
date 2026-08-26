@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validateRequest } from "../../../../common/middleware/validate-request";
 import type { ValidatedRequest } from "../../../../common/types/validated-request";
 import {
+  BulkCreateFolderSchema,
   CreateFolderSchema,
   ListFolderContentsSchema,
 } from "./folders.validator";
@@ -19,9 +20,34 @@ foldersController.post(
     req: ValidatedRequest<undefined, undefined, typeof CreateFolderSchema>,
     res,
   ) => {
-    const { name } = req.validatedBody!;
-    await folderService.createFolder({ name, ownerId: req.user!.id });
+    const { name, parentFolderId } = req.validatedBody!;
+    await folderService.createFolder({
+      name,
+      parentFolderId,
+      ownerId: req.user!.id,
+    });
     return res.status(201).json({ message: "Folder created successfully" });
+  },
+);
+
+foldersController.post(
+  "/bulk",
+  validateRequest({
+    body: BulkCreateFolderSchema,
+  }),
+  async (
+    req: ValidatedRequest<undefined, undefined, typeof BulkCreateFolderSchema>,
+    res,
+  ) => {
+    const { folderStructure, parentFolderId } = req.validatedBody!;
+    const folders = await folderService.bulkCreateFolders({
+      folderStructure,
+      parentFolderId,
+      ownerId: req.user!.id,
+    });
+    return res
+      .status(201)
+      .json({ message: "Folders created successfully", folders });
   },
 );
 
@@ -53,7 +79,7 @@ foldersController.get(
       ownerId: req.user!.id,
     });
 
-    return res.status(200).json(contents);
+    return res.status(200).json(serializeBigInt(contents));
   },
 );
 

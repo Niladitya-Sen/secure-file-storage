@@ -3,3 +3,9 @@ import z from "zod";
 export const UploadFilesSchema = z.object({
   folderId: z.string().optional(),
 });
+
+export const BulkUploadFolderSchema = z.object({
+  metadata: z
+    .string()
+    .transform((val) => JSON.parse(val) as Record<string, string>),
+});

@@ -4,6 +4,7 @@ import { prisma } from "../../../../common/lib/prisma";
 import type StorageService from "../storage/interfaces/StorageService";
 import LocalStorageService from "../storage/services/LocalStorageService";
 import crypto from "node:crypto";
+import type { BulkUploadFolderDTO } from "./files.dto";
 
 class FileService {
   private readonly storageService: StorageService;
@@ -74,6 +75,53 @@ class FileService {
           .map((f) => `${f.fileName}`)
           .join(", ")}`,
       );
+    }
+  }
+
+  async bulkUploadFolder({ metadata, files, ownerId }: BulkUploadFolderDTO) {
+    const failedUploads: { fileName: string; error: string }[] = [];
+
+    for (const file of files) {
+      const folderId = metadata[file.fileName];
+
+      if (!folderId) {
+        failedUploads.push({
+          fileName: file.fileName,
+          error: "No folder ID found for this file",
+        });
+        continue;
+      }
+
+      try {
+        const key = crypto.randomUUID();
+
+        await this.storageService.upload(file.buffer, key, file.contentType);
+
+        await prisma.file.create({
+          data: {
+            name: file.fileName,
+            storageKey: key,
+            mimeType: file.contentType,
+            size: file.buffer.length,
+            ownerId,
+            folderId: folderId,
+          },
+        });
+      } catch (error) {
+        console.log(error);
+        failedUploads.push({
+          fileName: file.fileName,
+          error: (error as Error).message,
+        });
+      }
+
+      if (failedUploads.length > 0) {
+        throw new BadRequestError(
+          `Failed to upload the following files: ${failedUploads
+            .map((f) => `${f.fileName}`)
+            .join(", ")}`,
+        );
+      }
     }
   }
 

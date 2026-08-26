@@ -66,15 +66,13 @@ authController.post("/logout", validateJwt, async (req, res) => {
     return res.status(400).json({ message: "Refresh token is required" });
   }
 
-  await authService.logout(refreshToken);
+  await authService.logout({ refreshToken });
   res.clearCookie("refreshToken");
   return res.status(200).json({ message: "Logged out successfully" });
 });
 
 authController.post("/refresh-token", async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
-
-  console.log(refreshToken);
 
   if (!refreshToken) {
     return res.status(400).json({ message: "Refresh token is required" });
