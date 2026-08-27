@@ -137,3 +137,86 @@ export function useUploadFolderMutation() {
 
   return uploadFolderMutation;
 }
+
+export function useDeleteFolderMutation() {
+  const queryClient = useQueryClient();
+
+  const deleteFileMutation = useMutation({
+    mutationFn: async ({
+      folderId,
+    }: {
+      folderId: string;
+      parentFolderId?: string;
+    }) => {
+      const [_, error] = await authFetch(`/folders/${folderId}`, {
+        method: "DELETE",
+      });
+
+      if (error) {
+        throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({
+        queryKey: vars.folderId ? ["folder", vars.parentFolderId] : ["folder"],
+      });
+
+      toast.add({
+        title: "Folder deleted successfully",
+        type: "success",
+      });
+    },
+    onError: (error) => {
+      toast.add({
+        title: "Error deleting folder",
+        description: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  return deleteFileMutation;
+}
+
+export function useRenameFolderMutation() {
+  const queryClient = useQueryClient();
+
+  const renameFolderMutation = useMutation({
+    mutationFn: async ({
+      folderId,
+      newFolderName,
+    }: {
+      folderId: string;
+      newFolderName: string;
+      parentFolderId?: string;
+    }) => {
+      const [_, error] = await authFetch(`/folders/${folderId}/rename`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ newFolderName }),
+      });
+
+      if (error) {
+        throw error;
+      }
+    },
+    onSuccess: (_, vars) => {
+      queryClient.invalidateQueries({
+        queryKey: vars.parentFolderId
+          ? ["folder", vars.parentFolderId]
+          : ["folder"],
+      });
+    },
+    onError: (error) => {
+      toast.add({
+        title: "Error renaming folder",
+        description: error.message,
+        type: "error",
+      });
+    },
+  });
+
+  return renameFolderMutation;
+}

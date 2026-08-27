@@ -13,3 +13,20 @@ export const BulkUploadFolderSchema = z.object({
 export const ViewFileSchema = z.object({
   fileId: z.string(),
 });
+
+export const RenameFileSchema = z.object({
+  fileId: z.string(),
+  newFileName: z.string(),
+});
+
+export const DeleteFileSchema = z.object({
+  fileId: z.string(),
+});
+
+export const ShareFileSchema = z.object({
+  fileId: z.string(),
+});
+
+export const ViewSharedFileSchema = z.object({
+  token: z.string(),
+});

@@ -13,3 +13,12 @@ export const BulkCreateFolderSchema = z.object({
 export const ListFolderContentsSchema = z.object({
   folderId: z.string().optional(),
 });
+
+export const RenameFolderSchema = z.object({
+  folderId: z.string(),
+  newFolderName: z.string().min(1, "New folder name is required"),
+});
+
+export const DeleteFolderSchema = z.object({
+  folderId: z.string(),
+});

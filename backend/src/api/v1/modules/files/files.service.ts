@@ -4,7 +4,9 @@ import { prisma } from "../../../../common/lib/prisma";
 import type StorageService from "../storage/interfaces/StorageService";
 import LocalStorageService from "../storage/services/LocalStorageService";
 import crypto from "node:crypto";
-import type { BulkUploadFolderDTO } from "./files.dto";
+import type { BulkUploadFolderDTO, RenameFileDTO } from "./files.dto";
+import { env } from "../../../../env";
+import { buildShareUrl } from "../../../../common/lib/utils";
 
 class FileService {
   private readonly storageService: StorageService;
@@ -125,11 +127,11 @@ class FileService {
     }
   }
 
-  async renameFile(
-    fileId: string,
-    newName: string,
-    userId: number,
-  ): Promise<void> {
+  async renameFile({
+    fileId,
+    newFileName,
+    userId,
+  }: RenameFileDTO): Promise<void> {
     const file = await prisma.file.findUnique({
       where: { id: fileId, ownerId: userId },
       select: { id: true },
@@ -141,23 +143,139 @@ class FileService {
 
     await prisma.file.update({
       where: { id: fileId },
-      data: { name: newName },
+      data: { name: newFileName },
     });
   }
 
   async deleteFiles(fileIds: string[], userId: number): Promise<void> {
-    const deletes = await prisma.file.deleteMany({
+    const files = await prisma.file.findMany({
       where: { id: { in: fileIds }, ownerId: userId },
+      select: { id: true, storageKey: true },
     });
 
-    if (deletes.count === 0) {
-      throw new NotFoundError("Files not found");
+    for (const file of files) {
+      await this.storageService.delete(file.storageKey);
     }
+
+    await prisma.file.deleteMany({
+      where: { id: { in: fileIds }, ownerId: userId },
+    });
   }
 
   async getFile(fileId: string, userId: number) {
     const file = await prisma.file.findUnique({
       where: { id: fileId, ownerId: userId },
+      select: {
+        id: true,
+        name: true,
+        storageKey: true,
+        mimeType: true,
+        size: true,
+        createdAt: true,
+        visibility: true,
+      },
+    });
+
+    if (!file) {
+      throw new NotFoundError("File not found");
+    }
+
+    const fileBuffer = await this.storageService.download(file.storageKey);
+
+    return {
+      file: file,
+      buffer: fileBuffer,
+    };
+  }
+
+  async shareFile(fileId: string, userId: number) {
+    const file = await prisma.file.findUnique({
+      where: { id: fileId, ownerId: userId },
+      select: {
+        id: true,
+        name: true,
+        visibility: true,
+        fileShare: {
+          select: {
+            token: true,
+          },
+        },
+      },
+    });
+
+    if (!file) {
+      throw new NotFoundError("File not found");
+    }
+
+    if (file.visibility === "PUBLIC") {
+      return {
+        shareUrl: buildShareUrl(file.fileShare!.token),
+      };
+    }
+
+    const token = crypto.randomUUID();
+
+    await prisma.$transaction([
+      prisma.fileShare.create({
+        data: {
+          fileId: file.id,
+          token,
+        },
+      }),
+      prisma.file.update({
+        where: { id: file.id },
+        data: { visibility: "PUBLIC" },
+      }),
+    ]);
+
+    return {
+      shareUrl: buildShareUrl(token),
+    };
+  }
+
+  async unshareFile(fileId: string, userId: number) {
+    const file = await prisma.file.findUnique({
+      where: { id: fileId, ownerId: userId },
+      select: {
+        id: true,
+        name: true,
+        visibility: true,
+      },
+    });
+
+    if (!file) {
+      throw new NotFoundError("File not found");
+    }
+
+    if (file.visibility === "PRIVATE") {
+      throw new BadRequestError("File is already private");
+    }
+
+    await prisma.$transaction([
+      prisma.fileShare.delete({
+        where: { fileId: file.id },
+      }),
+      prisma.file.update({
+        where: { id: file.id },
+        data: { visibility: "PRIVATE" },
+      }),
+    ]);
+  }
+
+  async getSharedFile(token: string) {
+    const fileShare = await prisma.fileShare.findUnique({
+      where: { token },
+      select: {
+        fileId: true,
+      },
+    });
+
+    if (!fileShare) {
+      throw new NotFoundError("Shared file not found");
+    }
+
+    const file = await prisma.file.findUnique({
+      where: { id: fileShare.fileId },
       select: {
         id: true,
         name: true,

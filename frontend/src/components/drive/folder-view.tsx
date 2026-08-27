@@ -26,7 +26,7 @@ export default function FolderView({
 
   const {
     data: folderContents,
-    isFetching,
+    isLoading,
     error,
   } = useQuery({
     queryKey: folderId ? ["folder", folderId] : ["folder"],
@@ -50,7 +50,7 @@ export default function FolderView({
     <div className="flex flex-1 flex-col">
       <Navbar path={folderContents?.path || []} />
       {(() => {
-        if (isFetching) {
+        if (isLoading) {
           return (
             <div className="flex flex-1 items-center justify-center">
               <Spinner className="size-10" />

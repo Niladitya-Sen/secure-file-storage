@@ -205,16 +205,16 @@ export type FileShareOrderByWithRelationInput = {
 
 export type FileShareWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  fileId?: string
   token?: string
   AND?: Prisma.FileShareWhereInput | Prisma.FileShareWhereInput[]
   OR?: Prisma.FileShareWhereInput[]
   NOT?: Prisma.FileShareWhereInput | Prisma.FileShareWhereInput[]
-  fileId?: Prisma.UuidFilter<"FileShare"> | string
   createdAt?: Prisma.DateTimeFilter<"FileShare"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"FileShare"> | Date | string
   expiresAt?: Prisma.DateTimeNullableFilter<"FileShare"> | Date | string | null
   file?: Prisma.XOR<Prisma.FileScalarRelationFilter, Prisma.FileWhereInput>
-}, "id" | "token">
+}, "id" | "fileId" | "token">
 
 export type FileShareOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -246,7 +246,7 @@ export type FileShareCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   expiresAt?: Date | string | null
-  file: Prisma.FileCreateNestedOneWithoutFileSharesInput
+  file: Prisma.FileCreateNestedOneWithoutFileShareInput
 }
 
 export type FileShareUncheckedCreateInput = {
@@ -264,7 +264,7 @@ export type FileShareUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  file?: Prisma.FileUpdateOneRequiredWithoutFileSharesNestedInput
+  file?: Prisma.FileUpdateOneRequiredWithoutFileShareNestedInput
 }
 
 export type FileShareUncheckedUpdateInput = {
@@ -302,14 +302,9 @@ export type FileShareUncheckedUpdateManyInput = {
   expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
-export type FileShareListRelationFilter = {
-  every?: Prisma.FileShareWhereInput
-  some?: Prisma.FileShareWhereInput
-  none?: Prisma.FileShareWhereInput
-}
-
-export type FileShareOrderByRelationAggregateInput = {
-  _count?: Prisma.SortOrder
+export type FileShareNullableScalarRelationFilter = {
+  is?: Prisma.FileShareWhereInput | null
+  isNot?: Prisma.FileShareWhereInput | null
 }
 
 export type FileShareCountOrderByAggregateInput = {
@@ -339,46 +334,36 @@ export type FileShareMinOrderByAggregateInput = {
   expiresAt?: Prisma.SortOrder
 }
 
-export type FileShareCreateNestedManyWithoutFileInput = {
-  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput> | Prisma.FileShareCreateWithoutFileInput[] | Prisma.FileShareUncheckedCreateWithoutFileInput[]
-  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput | Prisma.FileShareCreateOrConnectWithoutFileInput[]
-  createMany?: Prisma.FileShareCreateManyFileInputEnvelope
-  connect?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
+export type FileShareCreateNestedOneWithoutFileInput = {
+  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput>
+  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput
+  connect?: Prisma.FileShareWhereUniqueInput
 }
 
-export type FileShareUncheckedCreateNestedManyWithoutFileInput = {
-  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput> | Prisma.FileShareCreateWithoutFileInput[] | Prisma.FileShareUncheckedCreateWithoutFileInput[]
-  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput | Prisma.FileShareCreateOrConnectWithoutFileInput[]
-  createMany?: Prisma.FileShareCreateManyFileInputEnvelope
-  connect?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
+export type FileShareUncheckedCreateNestedOneWithoutFileInput = {
+  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput>
+  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput
+  connect?: Prisma.FileShareWhereUniqueInput
 }
 
-export type FileShareUpdateManyWithoutFileNestedInput = {
-  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput> | Prisma.FileShareCreateWithoutFileInput[] | Prisma.FileShareUncheckedCreateWithoutFileInput[]
-  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput | Prisma.FileShareCreateOrConnectWithoutFileInput[]
-  upsert?: Prisma.FileShareUpsertWithWhereUniqueWithoutFileInput | Prisma.FileShareUpsertWithWhereUniqueWithoutFileInput[]
-  createMany?: Prisma.FileShareCreateManyFileInputEnvelope
-  set?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  disconnect?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  delete?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  connect?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  update?: Prisma.FileShareUpdateWithWhereUniqueWithoutFileInput | Prisma.FileShareUpdateWithWhereUniqueWithoutFileInput[]
-  updateMany?: Prisma.FileShareUpdateManyWithWhereWithoutFileInput | Prisma.FileShareUpdateManyWithWhereWithoutFileInput[]
-  deleteMany?: Prisma.FileShareScalarWhereInput | Prisma.FileShareScalarWhereInput[]
+export type FileShareUpdateOneWithoutFileNestedInput = {
+  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput>
+  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput
+  upsert?: Prisma.FileShareUpsertWithoutFileInput
+  disconnect?: Prisma.FileShareWhereInput | boolean
+  delete?: Prisma.FileShareWhereInput | boolean
+  connect?: Prisma.FileShareWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FileShareUpdateToOneWithWhereWithoutFileInput, Prisma.FileShareUpdateWithoutFileInput>, Prisma.FileShareUncheckedUpdateWithoutFileInput>
 }
 
-export type FileShareUncheckedUpdateManyWithoutFileNestedInput = {
-  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput> | Prisma.FileShareCreateWithoutFileInput[] | Prisma.FileShareUncheckedCreateWithoutFileInput[]
-  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput | Prisma.FileShareCreateOrConnectWithoutFileInput[]
-  upsert?: Prisma.FileShareUpsertWithWhereUniqueWithoutFileInput | Prisma.FileShareUpsertWithWhereUniqueWithoutFileInput[]
-  createMany?: Prisma.FileShareCreateManyFileInputEnvelope
-  set?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  disconnect?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  delete?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  connect?: Prisma.FileShareWhereUniqueInput | Prisma.FileShareWhereUniqueInput[]
-  update?: Prisma.FileShareUpdateWithWhereUniqueWithoutFileInput | Prisma.FileShareUpdateWithWhereUniqueWithoutFileInput[]
-  updateMany?: Prisma.FileShareUpdateManyWithWhereWithoutFileInput | Prisma.FileShareUpdateManyWithWhereWithoutFileInput[]
-  deleteMany?: Prisma.FileShareScalarWhereInput | Prisma.FileShareScalarWhereInput[]
+export type FileShareUncheckedUpdateOneWithoutFileNestedInput = {
+  create?: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput>
+  connectOrCreate?: Prisma.FileShareCreateOrConnectWithoutFileInput
+  upsert?: Prisma.FileShareUpsertWithoutFileInput
+  disconnect?: Prisma.FileShareWhereInput | boolean
+  delete?: Prisma.FileShareWhereInput | boolean
+  connect?: Prisma.FileShareWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.FileShareUpdateToOneWithWhereWithoutFileInput, Prisma.FileShareUpdateWithoutFileInput>, Prisma.FileShareUncheckedUpdateWithoutFileInput>
 }
 
 export type NullableDateTimeFieldUpdateOperationsInput = {
@@ -406,45 +391,15 @@ export type FileShareCreateOrConnectWithoutFileInput = {
   create: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput>
 }
 
-export type FileShareCreateManyFileInputEnvelope = {
-  data: Prisma.FileShareCreateManyFileInput | Prisma.FileShareCreateManyFileInput[]
-  skipDuplicates?: boolean
-}
-
-export type FileShareUpsertWithWhereUniqueWithoutFileInput = {
-  where: Prisma.FileShareWhereUniqueInput
+export type FileShareUpsertWithoutFileInput = {
   update: Prisma.XOR<Prisma.FileShareUpdateWithoutFileInput, Prisma.FileShareUncheckedUpdateWithoutFileInput>
   create: Prisma.XOR<Prisma.FileShareCreateWithoutFileInput, Prisma.FileShareUncheckedCreateWithoutFileInput>
+  where?: Prisma.FileShareWhereInput
 }
 
-export type FileShareUpdateWithWhereUniqueWithoutFileInput = {
-  where: Prisma.FileShareWhereUniqueInput
+export type FileShareUpdateToOneWithWhereWithoutFileInput = {
+  where?: Prisma.FileShareWhereInput
   data: Prisma.XOR<Prisma.FileShareUpdateWithoutFileInput, Prisma.FileShareUncheckedUpdateWithoutFileInput>
-}
-
-export type FileShareUpdateManyWithWhereWithoutFileInput = {
-  where: Prisma.FileShareScalarWhereInput
-  data: Prisma.XOR<Prisma.FileShareUpdateManyMutationInput, Prisma.FileShareUncheckedUpdateManyWithoutFileInput>
-}
-
-export type FileShareScalarWhereInput = {
-  AND?: Prisma.FileShareScalarWhereInput | Prisma.FileShareScalarWhereInput[]
-  OR?: Prisma.FileShareScalarWhereInput[]
-  NOT?: Prisma.FileShareScalarWhereInput | Prisma.FileShareScalarWhereInput[]
-  id?: Prisma.UuidFilter<"FileShare"> | string
-  fileId?: Prisma.UuidFilter<"FileShare"> | string
-  token?: Prisma.UuidFilter<"FileShare"> | string
-  createdAt?: Prisma.DateTimeFilter<"FileShare"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"FileShare"> | Date | string
-  expiresAt?: Prisma.DateTimeNullableFilter<"FileShare"> | Date | string | null
-}
-
-export type FileShareCreateManyFileInput = {
-  id?: string
-  token: string
-  createdAt?: Date | string
-  updatedAt?: Date | string
-  expiresAt?: Date | string | null
 }
 
 export type FileShareUpdateWithoutFileInput = {
@@ -456,14 +411,6 @@ export type FileShareUpdateWithoutFileInput = {
 }
 
 export type FileShareUncheckedUpdateWithoutFileInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  token?: Prisma.StringFieldUpdateOperationsInput | string
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  expiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-}
-
-export type FileShareUncheckedUpdateManyWithoutFileInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string

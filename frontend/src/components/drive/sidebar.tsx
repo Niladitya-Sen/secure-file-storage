@@ -34,7 +34,7 @@ import {
   LinkIcon,
   PlusCircle,
 } from "lucide-react";
-import NewFolderDialog from "./new-folder-dialog";
+import NewFolderDialog from "./dialogs/new-folder-dialog";
 import { useDrive } from "@/store/drive-store";
 import { toast } from "../ui/toast";
 import Link from "next/link";

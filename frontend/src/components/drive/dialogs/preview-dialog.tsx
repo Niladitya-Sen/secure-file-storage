@@ -11,8 +11,8 @@ import { authFetchBlob } from "@/lib/auth-fetch";
 import { mimeTypeToIcon } from "@/lib/utils";
 import { useDrive } from "@/store/drive-store";
 import { useQuery } from "@tanstack/react-query";
-import { FileWarning } from "lucide-react";
 import Image from "next/image";
+import ViewFile from "../view-file";
 
 export default function PreviewDialog() {
   const isPreviewDialogOpen = useDrive((state) => state.isPreviewDialogOpen);
@@ -26,7 +26,7 @@ export default function PreviewDialog() {
         throw new Error("No file selected");
       }
 
-      const [data, error] = await authFetchBlob(previewFile.url);
+      const [data, error] = await authFetchBlob(previewFile.viewUrl);
 
       if (error) {
         throw error;
@@ -58,7 +58,7 @@ export default function PreviewDialog() {
     >
       <DialogContent
         className={
-          "sm:max-w-dvw h-dvh rounded-none bg-black/80 grid grid-rows-[auto_1fr]"
+          "sm:max-w-dvw h-dvh rounded-none bg-black/80 grid grid-rows-[auto_1fr] dark"
         }
       >
         <DialogHeader>
@@ -87,52 +87,4 @@ export default function PreviewDialog() {
       </DialogContent>
     </Dialog>
   );
-}
-
-function ViewFile({
-  mimeType,
-  url,
-}: Readonly<{ mimeType: string; url: string }>) {
-  if (mimeType.startsWith("image/")) {
-    return (
-      <div className="relative w-full h-full">
-        <Image src={url} alt="Preview" fill className="object-contain" />
-      </div>
-    );
-  } else if (mimeType.startsWith("video/")) {
-    return <video src={url} controls width={800} height={600} />;
-  } else if (mimeType.startsWith("audio/")) {
-    return <audio src={url} controls />;
-  } else if (mimeType === "application/pdf") {
-    return <iframe title="pdf-viewer" src={url} className="w-full h-full" />;
-  } else if (mimeType.startsWith("text/")) {
-    return <iframe title="text-viewer" src={url} width={800} height={600} />;
-  } else if (
-    mimeType === "application/msword" ||
-    mimeType ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-  ) {
-    return <iframe title="word-viewer" src={url} width={800} height={600} />;
-  } else if (
-    mimeType === "application/vnd.ms-excel" ||
-    mimeType ===
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  ) {
-    return <iframe title="excel-viewer" src={url} width={800} height={600} />;
-  } else if (
-    mimeType === "application/vnd.ms-powerpoint" ||
-    mimeType ===
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-  ) {
-    return (
-      <iframe title="powerpoint-viewer" src={url} width={800} height={600} />
-    );
-  } else {
-    return (
-      <div className="w-full h-full text-center text-xl">
-        <FileWarning className="mx-auto mb-4" size={48} />
-        Preview not available for this file type.
-      </div>
-    );
-  }
 }

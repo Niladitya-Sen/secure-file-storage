@@ -16,7 +16,9 @@ type File_ = {
   size: number;
   mimeType: string;
   visibility: FileVisibility;
-  url: string;
+  viewUrl: string;
+  downloadUrl: string;
+  shareUrl: string | null;
 };
 
 type FolderContents = {

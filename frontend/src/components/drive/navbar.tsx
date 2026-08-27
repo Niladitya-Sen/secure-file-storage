@@ -19,10 +19,11 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Ellipsis, Sun } from "lucide-react";
+import { Ellipsis, Moon, Sun } from "lucide-react";
 import { Button } from "../ui/button";
 import { useAuth } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
 const MAX_BREADCRUMB_ITEMS = 5; // includes "Home" and the current folder
 
@@ -32,6 +33,7 @@ export default function Navbar({ path }: Readonly<{ path: PathSegment[] }>) {
   const segmentsToShow = path.slice(-MAX_BREADCRUMB_ITEMS + 1); // -1 because we always show "Home" and the current folder
 
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
 
   return (
     <nav className="flex w-full items-center gap-1 border-b border-border px-4 py-4">
@@ -114,8 +116,16 @@ export default function Navbar({ path }: Readonly<{ path: PathSegment[] }>) {
           </PopoverContent>
         </Popover>
 
-        <Button variant={"outline"} size={"icon"}>
-          <Sun />
+        <Button
+          variant={"outline"}
+          size={"icon"}
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        >
+          {theme === "dark" ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
         </Button>
       </div>
     </nav>

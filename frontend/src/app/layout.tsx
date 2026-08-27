@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { DM_Sans } from "next/font/google";
 import "./globals.css";
 import QueryProvider from "@/components/providers/query-provider";
+import ThemeProvider from "@/components/providers/theme-provider";
 
 const dmSans = DM_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -17,18 +18,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn(
-        "h-full",
-        "antialiased",
-        "font-sans",
-        dmSans.variable,
-        "dark",
-      )}
+      className={cn("h-full", "antialiased", "font-sans", dmSans.variable)}
+      suppressHydrationWarning
     >
       <QueryProvider>
         <body className="min-h-full flex flex-col">
-          <TooltipProvider delay={200}>{children}</TooltipProvider>
-          <Toaster />
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TooltipProvider delay={200}>{children}</TooltipProvider>
+            <Toaster />
+          </ThemeProvider>
         </body>
       </QueryProvider>
     </html>

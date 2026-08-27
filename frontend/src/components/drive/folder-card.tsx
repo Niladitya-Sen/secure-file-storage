@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useDrive } from "@/store/drive-store";
 
 export default function FolderCard({
   id,
@@ -27,6 +28,12 @@ export default function FolderCard({
   createdAt,
 }: Readonly<Folder>) {
   const router = useRouter();
+  const openFolderDeleteDialog = useDrive(
+    (state) => state.openFolderDeleteDialog,
+  );
+  const openFolderRenameDialog = useDrive(
+    (state) => state.openFolderRenameDialog,
+  );
 
   return (
     <div className="bg-card rounded-lg flex items-center justify-start gap-4 border border-border overflow-hidden w-full max-w-auto md:max-w-75">
@@ -57,33 +64,44 @@ export default function FolderCard({
         ></DropdownMenuTrigger>
         <DropdownMenuContent align="start" className={"min-w-50"}>
           <DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => router.push(`/drive/folders/${id}`)}
+            >
               <Eye />
               Open
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => window.open(`/drive/folders/${id}`, "_blank")}
+            >
               <ExternalLink />
               Open in new tab
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Download />
-              Download
-            </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                openFolderRenameDialog({
+                  id,
+                  name,
+                  path,
+                  createdAt,
+                })
+              }
+            >
               <Edit3 />
               Rename
             </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Share2 />
-              Share
-            </DropdownMenuItem>
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                openFolderDeleteDialog({
+                  id,
+                  name,
+                  path,
+                  createdAt,
+                })
+              }
+            >
               <Trash2 />
               Delete
             </DropdownMenuItem>

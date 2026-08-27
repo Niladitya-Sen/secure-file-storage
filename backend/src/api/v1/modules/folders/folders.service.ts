@@ -4,9 +4,13 @@ import { prisma } from "../../../../common/lib/prisma";
 import type {
   BulkCreateFolderDto,
   CreateFolderDto,
+  DeleteFolderDto,
   ListFolderContentsDto,
+  RenameFolderDto,
 } from "./folders.dto";
 import { env } from "../../../../env";
+import { buildShareUrl } from "../../../../common/lib/utils";
+import BadRequestError from "../../../../common/errors/BadRequestError";
 
 class FolderService {
   async createFolder(data: CreateFolderDto): Promise<void> {
@@ -159,6 +163,11 @@ class FolderService {
           size: true,
           createdAt: true,
           visibility: true,
+          fileShare: {
+            select: {
+              token: true,
+            },
+          },
         },
       }),
     ]);
@@ -166,11 +175,63 @@ class FolderService {
     return {
       path: folderId ? folder?.path : [],
       folders,
-      files: files.map((file) => ({
+      files: files.map(({ fileShare, ...file }) => ({
         ...file,
-        url: `/files/${file.id}/view`,
+        viewUrl: `/files/${file.id}/view`,
+        downloadUrl: `/files/${file.id}/download`,
+        shareUrl: fileShare ? buildShareUrl(fileShare.token) : null,
       })),
     };
+  }
+
+  async renameFolder({ folderId, newFolderName, ownerId }: RenameFolderDto) {
+    const folder = await prisma.folder.findUnique({
+      where: { id: folderId, ownerId },
+      select: { id: true, name: true, path: true },
+    });
+
+    if (!folder) {
+      throw new NotFoundError("Folder not found");
+    }
+
+    let newPath = folder.path as Array<{ name: string; id: string }>;
+
+    newPath[newPath.length - 1] = {
+      name: newFolderName,
+      id: folder.id,
+    };
+
+    await prisma.folder.update({
+      where: { id: folder.id },
+      data: { name: newFolderName, path: newPath },
+    });
+  }
+
+  async deleteFolder({ folderId, ownerId }: DeleteFolderDto) {
+    const folder = await prisma.folder.findUnique({
+      where: { id: folderId, ownerId },
+      select: {
+        id: true,
+        _count: {
+          select: {
+            children: true,
+            files: true,
+          },
+        },
+      },
+    });
+
+    if (!folder) {
+      throw new NotFoundError("Folder not found");
+    }
+
+    if (folder._count.children > 0 || folder._count.files > 0) {
+      throw new BadRequestError("Cannot delete a non empty folder");
+    }
+
+    await prisma.folder.delete({
+      where: { id: folderId },
+    });
   }
 }
 

@@ -4,12 +4,17 @@ import type { ValidatedRequest } from "../../../../common/types/validated-reques
 import {
   BulkCreateFolderSchema,
   CreateFolderSchema,
+  DeleteFolderSchema,
   ListFolderContentsSchema,
+  RenameFolderSchema,
 } from "./folders.validator";
 import { folderService } from "./folders.service";
 import { serializeBigInt } from "../../../../common/lib/utils";
+import validateJwt from "../../../../common/middleware/validate-jwt";
 
 const foldersController = Router();
+
+foldersController.use(validateJwt);
 
 foldersController.post(
   "/",
@@ -80,6 +85,49 @@ foldersController.get(
     });
 
     return res.status(200).json(serializeBigInt(contents));
+  },
+);
+
+foldersController.put(
+  "/:folderId/rename",
+  validateRequest({
+    params: RenameFolderSchema.pick({ folderId: true }),
+    body: RenameFolderSchema.pick({ newFolderName: true }),
+  }),
+  async (
+    req: ValidatedRequest<
+      typeof RenameFolderSchema,
+      undefined,
+      typeof RenameFolderSchema
+    >,
+    res,
+  ) => {
+    const { folderId } = req.validatedParams!;
+    const { newFolderName } = req.validatedBody!;
+    await folderService.renameFolder({
+      folderId,
+      newFolderName,
+      ownerId: req.user!.id,
+    });
+    return res.status(200).json({ message: "Folder renamed successfully" });
+  },
+);
+
+foldersController.delete(
+  "/:folderId",
+  validateRequest({
+    params: DeleteFolderSchema,
+  }),
+  async (
+    req: ValidatedRequest<typeof DeleteFolderSchema, undefined, undefined>,
+    res,
+  ) => {
+    const { folderId } = req.validatedParams!;
+    await folderService.deleteFolder({
+      folderId,
+      ownerId: req.user!.id,
+    });
+    return res.status(200).json({ message: "Folder deleted successfully" });
   },
 );
 

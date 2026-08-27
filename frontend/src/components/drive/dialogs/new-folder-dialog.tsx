@@ -9,11 +9,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import React, { useState } from "react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { Button } from "../../ui/button";
+import { Input } from "../../ui/input";
 import { useDrive } from "@/store/drive-store";
 import { useCreateFolderMutation } from "@/actions/folder-actions";
-import { Spinner } from "../ui/spinner";
+import { Spinner } from "../../ui/spinner";
 
 export default function NewFolderDialog() {
   const open = useDrive((state) => state.openNewFolderDialog);

@@ -51,12 +51,12 @@ model File {
   updatedAt  DateTime       @updatedAt
   folder     Folder?        @relation(fields: [folderId], references: [id], onDelete: Cascade)
   owner      User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  fileShares FileShare[]
+  fileShare  FileShare?
 }
 
 model FileShare {
   id        String    @id @default(uuid()) @db.Uuid
-  fileId    String    @db.Uuid
+  fileId    String    @unique @db.Uuid
   token     String    @unique @db.Uuid
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

@@ -1,3 +1,4 @@
+import { toast } from "@/components/ui/toast";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -54,4 +55,32 @@ export function buildTreeFromPaths(paths: string[]): Record<string, any> {
   }
 
   return tree;
+}
+
+export function copyToClipboard(text: string) {
+  if (!navigator.clipboard) {
+    toast.add({
+      title: "Clipboard API not supported",
+      description: "Your browser does not support the Clipboard API.",
+      type: "error",
+    });
+    return;
+  }
+
+  navigator.clipboard
+    .writeText(text)
+    .then(() => {
+      toast.add({
+        title: "Share URL copied to clipboard",
+        description: "You can now share this URL with others.",
+        type: "success",
+      });
+    })
+    .catch((err) => {
+      toast.add({
+        title: "Error copying to clipboard",
+        description: err.message,
+        type: "error",
+      });
+    });
 }
