@@ -3,13 +3,21 @@ import { create } from "zustand";
 import { env } from "../env";
 import authFetch from "@/lib/auth-fetch";
 
+type User = {
+  email: string;
+  id: number;
+};
+
+type AuthResponse = {
+  user: User;
+  accessToken: string;
+  message?: string;
+};
+
 type UseAuthStore = {
   isAuthenticated: boolean;
   isAuthLoading: boolean;
-  user: {
-    id: number;
-    email: string;
-  } | null;
+  user: User | null;
   accessToken: string | null;
   isRefreshing: boolean;
   signup: (credentials: {
@@ -19,7 +27,7 @@ type UseAuthStore = {
   login: (credentials: { email: string; password: string }) => Promise<boolean>;
   logout: () => Promise<boolean>;
   getCurrentUser: () => Promise<void>;
-  refreshToken: () => Promise<boolean>;
+  refreshToken: () => Promise<boolean | null>;
 };
 
 export const useAuth = create<UseAuthStore>((set) => ({
@@ -39,7 +47,7 @@ export const useAuth = create<UseAuthStore>((set) => ({
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
+    const data: AuthResponse = await response.json();
 
     if (response.ok) {
       set({
@@ -49,7 +57,6 @@ export const useAuth = create<UseAuthStore>((set) => ({
       });
       toast.add({
         title: "Signup Successful",
-        description: `Welcome, ${data.user.name}!`,
       });
 
       return true;
@@ -73,7 +80,7 @@ export const useAuth = create<UseAuthStore>((set) => ({
       body: JSON.stringify({ email, password }),
     });
 
-    const data = await response.json();
+    const data: AuthResponse = await response.json();
 
     if (response.ok) {
       set({
@@ -83,7 +90,6 @@ export const useAuth = create<UseAuthStore>((set) => ({
       });
       toast.add({
         title: "Login Successful",
-        description: `Welcome back, ${data.user.name}!`,
       });
 
       return true;
@@ -127,7 +133,7 @@ export const useAuth = create<UseAuthStore>((set) => ({
 
   async refreshToken() {
     if (useAuth.getState().isRefreshing) {
-      return false; // Prevent multiple refresh attempts
+      return null; // Prevent multiple refresh attempts
     }
 
     set({ isRefreshing: true });
@@ -156,7 +162,7 @@ export const useAuth = create<UseAuthStore>((set) => ({
 
   async getCurrentUser() {
     set({ isAuthLoading: true });
-    const [data, _] = await authFetch<{ user: any }>(`/auth/me`, {
+    const [data, _] = await authFetch<{ user: User }>(`/auth/me`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

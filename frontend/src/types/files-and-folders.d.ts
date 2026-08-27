@@ -26,3 +26,7 @@ type FolderContents = {
   folders: Folder[];
   files: File_[];
 };
+
+type SharedFile = File_ & {
+  sharedAt: string;
+};

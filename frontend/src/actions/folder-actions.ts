@@ -1,7 +1,9 @@
 import { toast } from "@/components/ui/toast";
 import authFetch from "@/lib/auth-fetch";
 import { buildTreeFromPaths } from "@/lib/utils";
+import { useDrive } from "@/store/drive-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { uploadFile } from "./file-actions";
 
 export function useCreateFolderMutation() {
   const queryClient = useQueryClient();
@@ -61,15 +63,9 @@ export function useUploadFolderMutation() {
       files: File[];
       folderId?: string;
     }) => {
-      // 1. read the folder structure from the files and send to the backend
-      // 2. backend will create the folder structure and upload the files to the respective folders
-
       const folderStructure = buildTreeFromPaths(
         files.map((file) => file.webkitRelativePath),
       );
-
-      console.log(files);
-      console.log(folderStructure);
 
       const [data, error] = await authFetch<{
         folders: Record<string, string>;
@@ -89,36 +85,61 @@ export function useUploadFolderMutation() {
         throw new Error(error.message);
       }
 
-      console.log(data);
+      const MAX_CONCURRENT_UPLOADS = 3;
+      let currentIndex = 0;
 
-      const formData = new FormData();
+      useDrive.getState().setUploadFileState(
+        files.reduce(
+          (acc, file) => {
+            acc[file.name] = "uploading";
+            return acc;
+          },
+          {} as Record<string, "uploading" | "success" | "error">,
+        ),
+      );
 
-      let metadata: Record<string, string> = {};
-
-      for (const file of files) {
-        const fileFolderPath = file.webkitRelativePath.substring(
-          0,
-          file.webkitRelativePath.lastIndexOf("/"),
+      for (
+        let i = 0;
+        i < Math.ceil(files.length / MAX_CONCURRENT_UPLOADS);
+        i++
+      ) {
+        const uploadBatch = files.slice(
+          currentIndex,
+          currentIndex + MAX_CONCURRENT_UPLOADS,
         );
-        const folderId = data?.folders[fileFolderPath];
 
-        if (folderId) {
-          formData.append("files", file);
-          metadata[file.name] = folderId;
-        }
-      }
+        const uploadPromises = uploadBatch.map((file) =>
+          uploadFile({
+            file,
+            folderId:
+              data?.folders[
+                file.webkitRelativePath.substring(
+                  0,
+                  file.webkitRelativePath.lastIndexOf("/"),
+                )
+              ],
+          }),
+        );
 
-      formData.append("metadata", JSON.stringify(metadata));
+        await Promise.allSettled(uploadPromises);
 
-      const [_, uploadError] = await authFetch<{
-        message: string;
-      }>("/files/bulk-folder", {
-        method: "POST",
-        body: formData,
-      });
+        uploadBatch.forEach((file) => {
+          queryClient.invalidateQueries({
+            queryKey: file
+              ? [
+                  "folder",
+                  data?.folders[
+                    file.webkitRelativePath.substring(
+                      0,
+                      file.webkitRelativePath.lastIndexOf("/"),
+                    )
+                  ],
+                ]
+              : ["folder"],
+          });
+        });
 
-      if (uploadError) {
-        throw new Error(uploadError.message);
+        currentIndex += MAX_CONCURRENT_UPLOADS;
       }
     },
     onSuccess: (_, vars) => {

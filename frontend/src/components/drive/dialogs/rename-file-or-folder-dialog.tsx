@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useDrive } from "@/store/drive-store";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function RenameFileOrFolderDialog() {
   const open = useDrive((state) => state.isRenameDialogOpen);
@@ -26,6 +26,14 @@ export default function RenameFileOrFolderDialog() {
 
   const renameFileMutation = useRenameFileMutation();
   const renameFolderMutation = useRenameFolderMutation();
+
+  useEffect(() => {
+    if (fileToRename) {
+      setNewName(fileToRename.name);
+    } else if (folderToRename) {
+      setNewName(folderToRename.name);
+    }
+  }, [fileToRename?.name, folderToRename?.name]);
 
   async function handleRename() {
     if (!newName.trim()) {

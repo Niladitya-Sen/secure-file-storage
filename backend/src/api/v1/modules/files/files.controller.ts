@@ -13,6 +13,7 @@ import {
   ViewSharedFileSchema,
 } from "./files.validator";
 import validateJwt from "../../../../common/middleware/validate-jwt";
+import { serializeBigInt } from "../../../../common/lib/utils";
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -24,7 +25,7 @@ const filesController = Router();
 filesController.post(
   "/upload",
   validateJwt,
-  upload.any(),
+  upload.single("file"),
   validateRequest({
     body: UploadFilesSchema,
   }),
@@ -35,21 +36,33 @@ filesController.post(
     const userId = req.user?.id!;
     const { folderId } = req.validatedBody!;
 
-    const files = (req.files as Express.Multer.File[]).map((file) => ({
-      buffer: file.buffer,
-      fileName: file.originalname,
-      contentType: file.mimetype,
-    }));
+    const file = req.file;
 
-    await fileService.uploadFiles({
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    await fileService.uploadFile({
       userId: userId,
       folderId: folderId ?? null,
-      files: files,
+      file: {
+        buffer: file.buffer,
+        fileName: file.originalname,
+        contentType: file.mimetype,
+      },
     });
 
-    return res.status(201).json({ message: "Files uploaded successfully" });
+    return res.status(201).json({ message: "File uploaded successfully" });
   },
 );
+
+filesController.get("/shared", validateJwt, async (req, res) => {
+  const userId = req.user?.id!;
+
+  const sharedFiles = await fileService.getAllSharedFiles(userId);
+
+  return res.status(200).json(serializeBigInt(sharedFiles));
+});
 
 filesController.post(
   "/bulk-folder",

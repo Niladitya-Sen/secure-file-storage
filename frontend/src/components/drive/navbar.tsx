@@ -27,10 +27,17 @@ import { useTheme } from "next-themes";
 
 const MAX_BREADCRUMB_ITEMS = 5; // includes "Home" and the current folder
 
-export default function Navbar({ path }: Readonly<{ path: PathSegment[] }>) {
+type NavbarProps =
+  | {
+      path: PathSegment[];
+    }
+  | {
+      title: string;
+    };
+
+export default function Navbar(props: Readonly<NavbarProps>) {
   const user = useAuth((state) => state.user);
   const logout = useAuth((state) => state.logout);
-  const segmentsToShow = path.slice(-MAX_BREADCRUMB_ITEMS + 1); // -1 because we always show "Home" and the current folder
 
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -39,44 +46,12 @@ export default function Navbar({ path }: Readonly<{ path: PathSegment[] }>) {
     <nav className="flex w-full items-center gap-1 border-b border-border px-4 py-4">
       <SidebarTrigger />
       <Separator orientation="vertical" className={"mx-2"} />
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink render={<Link href="/drive" />}>
-              Home
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          {path.length > 0 && <BreadcrumbSeparator />}
-          {path.length >= MAX_BREADCRUMB_ITEMS && (
-            <>
-              <BreadcrumbItem>
-                <BreadcrumbLink
-                  render={
-                    <Link
-                      href={`/drive/folders/${path.at(-MAX_BREADCRUMB_ITEMS)?.id}`}
-                    />
-                  }
-                >
-                  <Ellipsis />
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-            </>
-          )}
-          {segmentsToShow.map((segment, index) => (
-            <React.Fragment key={segment.id}>
-              <BreadcrumbItem>
-                <BreadcrumbLink
-                  render={<Link href={`/drive/folders/${segment.id}`} />}
-                >
-                  {segment.name}
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              {index < segmentsToShow.length - 1 && <BreadcrumbSeparator />}
-            </React.Fragment>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
+
+      {"path" in props ? (
+        <Path path={props.path} />
+      ) : (
+        <p className="text-base">{props.title}</p>
+      )}
 
       <div className="ml-auto flex items-center gap-2">
         <Popover>
@@ -129,5 +104,52 @@ export default function Navbar({ path }: Readonly<{ path: PathSegment[] }>) {
         </Button>
       </div>
     </nav>
+  );
+}
+
+function Path({
+  path,
+}: Readonly<{
+  path: PathSegment[];
+}>) {
+  const segmentsToShow = path.slice(-MAX_BREADCRUMB_ITEMS + 1); // -1 because we always show "Home" and the current folder
+
+  return (
+    <Breadcrumb>
+      <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink render={<Link href="/drive" />}>Home</BreadcrumbLink>
+        </BreadcrumbItem>
+        {path.length > 0 && <BreadcrumbSeparator />}
+        {path.length >= MAX_BREADCRUMB_ITEMS && (
+          <>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                render={
+                  <Link
+                    href={`/drive/folders/${path.at(-MAX_BREADCRUMB_ITEMS)?.id}`}
+                  />
+                }
+              >
+                <Ellipsis />
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+          </>
+        )}
+        {segmentsToShow.map((segment, index) => (
+          <React.Fragment key={segment.id}>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                render={<Link href={`/drive/folders/${segment.id}`} />}
+              >
+                {segment.name}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            {index < segmentsToShow.length - 1 && <BreadcrumbSeparator />}
+          </React.Fragment>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
   );
 }

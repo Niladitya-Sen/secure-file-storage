@@ -18,10 +18,21 @@ export default async function authFetch<T>(
 
   if (response.status === 401) {
     const success = await useAuth.getState().refreshToken();
+
+    if (success === null) {
+      return [
+        null,
+        { code: "REFRESH_IN_PROGRESS", message: "Refresh in progress" },
+      ];
+    }
+
     if (success) {
       return authFetch(uri, options);
     } else {
-      return [null, { message: "Unauthorized" }];
+      if (!window.location.pathname.startsWith("/auth")) {
+        window.location.href = "/auth/login";
+      }
+      return [null, { code: "REFRESH_FAILED", message: "Unauthorized" }];
     }
   }
 
@@ -52,10 +63,21 @@ export async function authFetchBlob(
 
   if (response.status === 401) {
     const success = await useAuth.getState().refreshToken();
+
+    if (success === null) {
+      return [
+        null,
+        { code: "REFRESH_IN_PROGRESS", message: "Refresh in progress" },
+      ];
+    }
+
     if (success) {
       return authFetchBlob(uri, options);
     } else {
-      return [null, { message: "Unauthorized" }];
+      if (!window.location.pathname.startsWith("/auth")) {
+        window.location.href = "/auth/login";
+      }
+      return [null, { code: "REFRESH_FAILED", message: "Unauthorized" }];
     }
   }
 

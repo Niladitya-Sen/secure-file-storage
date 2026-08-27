@@ -24,6 +24,15 @@ type DriveStore = {
   openFileRenameDialog: (file: File_) => void;
   openFolderRenameDialog: (folder: Folder) => void;
   closeRenameDialog: () => void;
+
+  uploadFileState: Record<string, "uploading" | "success" | "error">;
+  setUploadFileState: (
+    state: Record<string, "uploading" | "success" | "error">,
+  ) => void;
+  updateUploadFileState: (
+    fileName: string,
+    state: "uploading" | "success" | "error",
+  ) => void;
 };
 
 export const useDrive = create<DriveStore>((set) => ({
@@ -75,4 +84,19 @@ export const useDrive = create<DriveStore>((set) => ({
       fileToRename: null,
       folderToRename: null,
     }),
+
+  uploadFileState: {},
+  setUploadFileState: (
+    state: Record<string, "uploading" | "success" | "error">,
+  ) => set({ uploadFileState: state }),
+  updateUploadFileState: (
+    fileName: string,
+    state: "uploading" | "success" | "error",
+  ) =>
+    set((prevState) => ({
+      uploadFileState: {
+        ...prevState.uploadFileState,
+        [fileName]: state,
+      },
+    })),
 }));

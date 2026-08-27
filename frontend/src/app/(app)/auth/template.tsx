@@ -1,31 +1,25 @@
 "use client";
 
 import { useAuth } from "@/store/auth-store";
+import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
-import { Spinner } from "../ui/spinner";
 
-export default function AuthProvider({
+export default function AuthTemplate({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const getCurrentUser = useAuth((state) => state.getCurrentUser);
   const user = useAuth((state) => state.user);
-  const isAuthLoading = useAuth((state) => state.isAuthLoading);
+  const router = useRouter();
 
   useEffect(() => {
     if (!user) {
       getCurrentUser();
+    } else {
+      router.replace("/drive");
     }
   }, [getCurrentUser, user]);
-
-  if (isAuthLoading || !user) {
-    return (
-      <div className="h-dvh w-full flex items-center justify-center">
-        <Spinner className="size-8" />
-      </div>
-    );
-  }
 
   return <>{children}</>;
 }

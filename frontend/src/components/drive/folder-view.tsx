@@ -7,9 +7,10 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useEffect } from "react";
 import { Spinner } from "../ui/spinner";
-import FileCard from "./file-card";
-import FolderCard from "./folder-card";
+import FileCard from "./cards/file-card";
+import FolderCard from "./cards/folder-card";
 import Navbar from "./navbar";
+import UploadsProgressViewer from "./uploads-progress-viewer";
 
 export default function FolderView({
   folderId,
@@ -47,7 +48,7 @@ export default function FolderView({
   });
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col relative overflow-hidden">
       <Navbar path={folderContents?.path || []} />
       {(() => {
         if (isLoading) {
@@ -67,7 +68,7 @@ export default function FolderView({
         }
 
         return (
-          <div className="px-6 py-4 flex flex-col flex-1">
+          <div className="px-6 py-4 flex flex-col flex-1 overflow-y-auto">
             {folderContents && (
               <div
                 className={cn(
@@ -112,6 +113,7 @@ export default function FolderView({
           </div>
         );
       })()}
+      <UploadsProgressViewer />
     </div>
   );
 }

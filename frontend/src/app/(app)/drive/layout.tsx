@@ -9,18 +9,18 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 export default function DriveLayout({ children }: LayoutProps<"/drive">) {
   return (
     <SidebarProvider>
-      <main className="h-dvh max-h-dvh flex w-full bg-sidebar">
-        <AuthProvider>
+      <AuthProvider>
+        <main className="h-dvh max-h-dvh flex w-full bg-sidebar overflow-hidden">
           <NewFolderDialog />
           <PreviewDialog />
           <DeleteFileOrFolderDialog />
           <RenameFileOrFolderDialog />
           <DriveSidebar />
-          <section className="bg-background rounded-xl flex flex-col flex-1 ml-2 m-4 border border-border shadow">
+          <section className="bg-background rounded-xl flex flex-col flex-1 ml-2 m-4 border border-border shadow overflow-hidden">
             {children}
           </section>
-        </AuthProvider>
-      </main>
+        </main>
+      </AuthProvider>
     </SidebarProvider>
   );
 }

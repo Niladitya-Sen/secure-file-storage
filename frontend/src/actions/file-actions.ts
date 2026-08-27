@@ -1,7 +1,100 @@
 import { toast } from "@/components/ui/toast";
+import { env } from "@/env";
 import authFetch from "@/lib/auth-fetch";
 import { copyToClipboard } from "@/lib/utils";
+import { useAuth } from "@/store/auth-store";
+import { useDrive } from "@/store/drive-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+type UploadOptions = {
+  file: File;
+  folderId?: string;
+};
+
+export function uploadFile({ file, folderId }: UploadOptions): Promise<any> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", `${env.NEXT_PUBLIC_API_URL}/files/upload`);
+
+    xhr.withCredentials = true;
+
+    xhr.setRequestHeader(
+      "Authorization",
+      `Bearer ${useAuth.getState().accessToken}`,
+    );
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        useDrive.getState().updateUploadFileState(file.name, "success");
+        resolve(JSON.parse(xhr.responseText));
+      } else {
+        useDrive.getState().updateUploadFileState(file.name, "error");
+        reject(JSON.parse(xhr.responseText));
+      }
+    };
+
+    xhr.onerror = () => {
+      reject(new Error("Network error"));
+    };
+
+    xhr.onabort = () => {
+      reject(new Error("Upload cancelled"));
+    };
+
+    const formData = new FormData();
+
+    formData.append("file", file);
+
+    if (folderId) {
+      formData.append("folderId", folderId);
+    }
+
+    xhr.send(formData);
+  });
+}
+
+export async function uploadFiles({
+  files,
+  folderId,
+  onConcurrentUploadComplete,
+}: {
+  files: File[];
+  folderId?: string;
+  onConcurrentUploadComplete?: () => void;
+}) {
+  const MAX_CONCURRENT_UPLOADS = 3;
+  let currentIndex = 0;
+
+  useDrive.getState().setUploadFileState(
+    files.reduce(
+      (acc, file) => {
+        acc[file.name] = "uploading";
+        return acc;
+      },
+      {} as Record<string, "uploading" | "success" | "error">,
+    ),
+  );
+
+  for (let i = 0; i < Math.ceil(files.length / MAX_CONCURRENT_UPLOADS); i++) {
+    const uploadBatch = files.slice(
+      currentIndex,
+      currentIndex + MAX_CONCURRENT_UPLOADS,
+    );
+
+    const uploadPromises = uploadBatch.map((file) =>
+      uploadFile({
+        file,
+        folderId,
+      }),
+    );
+
+    await Promise.allSettled(uploadPromises);
+
+    onConcurrentUploadComplete?.();
+    currentIndex += MAX_CONCURRENT_UPLOADS;
+  }
+}
 
 export function useUploadFilesMutation() {
   const queryClient = useQueryClient();
@@ -124,6 +217,9 @@ export function useUnshareFileMutation() {
       queryClient.invalidateQueries({
         queryKey: vars.folderId ? ["folder", vars.folderId] : ["folder"],
       });
+      queryClient.invalidateQueries({
+        queryKey: ["shared-files"],
+      });
 
       toast.add({
         title: "Public access revoked",
@@ -159,6 +255,9 @@ export function useDeleteFileMutation() {
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({
         queryKey: vars.folderId ? ["folder", vars.folderId] : ["folder"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["shared-files"],
       });
 
       toast.add({
@@ -205,6 +304,9 @@ export function useRenameFileMutation() {
     onSuccess: (_, vars) => {
       queryClient.invalidateQueries({
         queryKey: vars.folderId ? ["folder", vars.folderId] : ["folder"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["shared-files"],
       });
     },
     onError: (error) => {

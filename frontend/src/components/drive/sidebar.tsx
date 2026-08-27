@@ -1,10 +1,7 @@
 "use client";
 
-import { useUploadFilesMutation } from "@/actions/file-actions";
-import {
-  useCreateFolderMutation,
-  useUploadFolderMutation,
-} from "@/actions/folder-actions";
+import { uploadFiles } from "@/actions/file-actions";
+import { useUploadFolderMutation } from "@/actions/folder-actions";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +22,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { fi } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { useDrive } from "@/store/drive-store";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   FileUp,
   FolderPlus,
@@ -34,12 +33,10 @@ import {
   LinkIcon,
   PlusCircle,
 } from "lucide-react";
-import NewFolderDialog from "./dialogs/new-folder-dialog";
-import { useDrive } from "@/store/drive-store";
-import { toast } from "../ui/toast";
-import Link from "next/link";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { toast } from "../ui/toast";
 
 const items = [
   {
@@ -58,8 +55,9 @@ export default function DriveSidebar() {
   const { open } = useSidebar();
   const openNewFolderDialog = useDrive((state) => state.setOpenNewFolderDialog);
   const currentFolderId = useDrive((state) => state.currentFolderId);
+  const pathname = usePathname();
+  const queryClient = useQueryClient();
 
-  const fileUploadMutation = useUploadFilesMutation();
   const folderUploadMutation = useUploadFolderMutation();
 
   async function handleFileUpload() {
@@ -81,9 +79,16 @@ export default function DriveSidebar() {
           return;
         }
 
-        await fileUploadMutation.mutateAsync({
+        await uploadFiles({
           files,
           folderId: currentFolderId ?? undefined,
+          onConcurrentUploadComplete: () => {
+            queryClient.invalidateQueries({
+              queryKey: currentFolderId
+                ? ["folder", currentFolderId]
+                : ["folder"],
+            });
+          },
         });
       }
 
@@ -187,12 +192,14 @@ export default function DriveSidebar() {
                 </DropdownMenu>
               </SidebarMenuItem>
             </SidebarMenu>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2 mt-1">
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     tooltip={item.title}
                     render={<Link href={item.href} />}
+                    isActive={pathname === item.href}
+                    className="data-active:bg-primary data-active:hover:bg-primary/80 data-active:text-primary-foreground"
                   >
                     {item.icon && <item.icon />}
                     <span>{item.title}</span>

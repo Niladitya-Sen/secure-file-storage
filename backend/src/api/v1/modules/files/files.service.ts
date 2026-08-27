@@ -15,14 +15,14 @@ class FileService {
     this.storageService = new LocalStorageService();
   }
 
-  async uploadFiles({
+  async uploadFile({
     userId,
     folderId,
-    files,
+    file,
   }: {
     userId: number;
     folderId: string | null;
-    files: { buffer: Buffer; fileName: string; contentType: string }[];
+    file: { buffer: Buffer; fileName: string; contentType: string };
   }) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -44,40 +44,20 @@ class FileService {
       throw new BadRequestError("Folder not found");
     }
 
-    let failedUploads: { fileName: string; error: string }[] = [];
+    const key = crypto.randomUUID();
 
-    for (const file of files) {
-      try {
-        const key = crypto.randomUUID();
+    await this.storageService.upload(file.buffer, key, file.contentType);
 
-        await this.storageService.upload(file.buffer, key, file.contentType);
-
-        await prisma.file.create({
-          data: {
-            name: file.fileName,
-            storageKey: key,
-            mimeType: file.contentType,
-            size: file.buffer.length,
-            ownerId: userId,
-            folderId: folderId || null,
-          },
-        });
-      } catch (error) {
-        console.log(error);
-        failedUploads.push({
-          fileName: file.fileName,
-          error: (error as Error).message,
-        });
-      }
-    }
-
-    if (failedUploads.length > 0) {
-      throw new BadRequestError(
-        `Failed to upload the following files: ${failedUploads
-          .map((f) => `${f.fileName}`)
-          .join(", ")}`,
-      );
-    }
+    await prisma.file.create({
+      data: {
+        name: file.fileName,
+        storageKey: key,
+        mimeType: file.contentType,
+        size: file.buffer.length,
+        ownerId: userId,
+        folderId: folderId || null,
+      },
+    });
   }
 
   async bulkUploadFolder({ metadata, files, ownerId }: BulkUploadFolderDTO) {
@@ -297,6 +277,34 @@ class FileService {
       file: file,
       buffer: fileBuffer,
     };
+  }
+
+  async getAllSharedFiles(userId: number) {
+    const sharedFiles = await prisma.file.findMany({
+      where: { ownerId: userId, visibility: "PUBLIC" },
+      select: {
+        id: true,
+        name: true,
+        mimeType: true,
+        size: true,
+        createdAt: true,
+        visibility: true,
+        fileShare: {
+          select: {
+            token: true,
+            createdAt: true,
+          },
+        },
+      },
+    });
+
+    return sharedFiles.map(({ fileShare, ...file }) => ({
+      ...file,
+      viewUrl: `/files/${file.id}/view`,
+      downloadUrl: `/files/${file.id}/download`,
+      shareUrl: fileShare ? buildShareUrl(fileShare.token) : null,
+      sharedAt: fileShare?.createdAt || null,
+    }));
   }
 }
 
