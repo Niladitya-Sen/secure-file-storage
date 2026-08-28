@@ -33,7 +33,7 @@ export const ALLOWED_FILE_TYPES: Record<string, string[]> = {
   avi: ["video/x-msvideo"],
   mov: ["video/quicktime"],
   mkv: ["video/x-matroska"],
-  zip: ["application/zip"],
+  zip: ["application/zip", "application/x-zip-compressed"],
   rar: ["application/x-rar-compressed"],
   tar: ["application/x-tar"],
   "7z": ["application/x-7z-compressed"],
