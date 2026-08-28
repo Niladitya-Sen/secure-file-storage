@@ -152,6 +152,7 @@ class FolderService {
       prisma.folder.findMany({
         where: { ownerId, parentId: folderId ?? null },
         select: { id: true, name: true, path: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
       }),
       prisma.file.findMany({
         where: { ownerId, folderId: folderId ?? null },
@@ -168,6 +169,7 @@ class FolderService {
             },
           },
         },
+        orderBy: { createdAt: "desc" },
       }),
     ]);
 

@@ -251,6 +251,7 @@ class FileService {
           },
         },
       },
+      orderBy: { createdAt: "desc" },
     });
 
     return sharedFiles.map(({ fileShare, ...file }) => ({
