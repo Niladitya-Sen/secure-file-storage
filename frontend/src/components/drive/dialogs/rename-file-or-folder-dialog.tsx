@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { useDrive } from "@/store/drive-store";
 import { useEffect, useState } from "react";
 
@@ -116,10 +117,25 @@ export default function RenameFileOrFolderDialog() {
           )}
         </div>
         <DialogFooter>
-          <Button variant={"outline"} onClick={closeRenameDialog}>
+          <Button
+            disabled={
+              renameFileMutation.isPending || renameFolderMutation.isPending
+            }
+            variant={"outline"}
+            onClick={closeRenameDialog}
+          >
             Cancel
           </Button>
-          <Button disabled={!newName.trim()} onClick={handleRename}>
+          <Button
+            disabled={
+              !newName.trim() ||
+              renameFileMutation.isPending ||
+              renameFolderMutation.isPending
+            }
+            onClick={handleRename}
+          >
+            {(renameFileMutation.isPending ||
+              renameFolderMutation.isPending) && <Spinner />}
             Rename
           </Button>
         </DialogFooter>

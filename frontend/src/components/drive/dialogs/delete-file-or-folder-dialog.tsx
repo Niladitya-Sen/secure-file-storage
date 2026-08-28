@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
 import { useDrive } from "@/store/drive-store";
 
 export default function DeleteFileOrFolderDialog() {
@@ -84,10 +85,24 @@ export default function DeleteFileOrFolderDialog() {
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant={"outline"} onClick={closeDeleteDialog}>
+          <Button
+            disabled={
+              deleteFileMutation.isPending || deleteFolderMutation.isPending
+            }
+            variant={"outline"}
+            onClick={closeDeleteDialog}
+          >
             Cancel
           </Button>
-          <Button variant={"destructive"} onClick={handleDelete}>
+          <Button
+            disabled={
+              deleteFileMutation.isPending || deleteFolderMutation.isPending
+            }
+            variant={"destructive"}
+            onClick={handleDelete}
+          >
+            {(deleteFileMutation.isPending ||
+              deleteFolderMutation.isPending) && <Spinner />}
             Delete
           </Button>
         </DialogFooter>
