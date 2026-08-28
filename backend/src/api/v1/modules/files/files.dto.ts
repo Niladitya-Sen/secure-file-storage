@@ -1,5 +1,5 @@
 import z from "zod";
-import type { RenameFileSchema, UploadFileSchema } from "./files.validator";
+import type { RenameFileSchema, UploadFileSchema } from "./files.validator.ts";
 
 export type UploadFileDTO = WithOwnerId<z.infer<typeof UploadFileSchema>>;
 

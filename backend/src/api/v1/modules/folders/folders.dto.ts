@@ -5,7 +5,7 @@ import type {
   DeleteFolderSchema,
   ListFolderContentsSchema,
   RenameFolderSchema,
-} from "./folders.validator";
+} from "./folders.validator.ts";
 
 export type CreateFolderDto = WithOwnerId<z.infer<typeof CreateFolderSchema>>;
 

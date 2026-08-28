@@ -1,4 +1,4 @@
-import BadRequestError from "./BadRequestError";
+import BadRequestError from "./BadRequestError.ts";
 
 export default class ValidationError extends BadRequestError {
   private readonly validationErrors: Record<string, string>;

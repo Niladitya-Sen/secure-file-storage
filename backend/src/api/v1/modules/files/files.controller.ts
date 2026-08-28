@@ -1,8 +1,9 @@
 import { Router } from "express";
-import multer from "multer";
-import { validateRequest } from "../../../../common/middleware/validate-request";
-import type { ValidatedRequest } from "../../../../common/types/validated-request";
-import { fileService } from "./files.service";
+import { serializeBigInt } from "../../../../common/lib/utils.ts";
+import validateJwt from "../../../../common/middleware/validate-jwt.ts";
+import { validateRequest } from "../../../../common/middleware/validate-request.ts";
+import type { ValidatedRequest } from "../../../../common/types/validated-request.ts";
+import { fileService } from "./files.service.ts";
 import {
   DeleteFileSchema,
   RenameFileSchema,
@@ -10,9 +11,7 @@ import {
   UploadFileSchema,
   ViewFileSchema,
   ViewSharedFileSchema,
-} from "./files.validator";
-import validateJwt from "../../../../common/middleware/validate-jwt";
-import { serializeBigInt } from "../../../../common/lib/utils";
+} from "./files.validator.ts";
 
 const filesController = Router();
 
@@ -178,3 +177,4 @@ filesController.get(
 );
 
 export { filesController };
+

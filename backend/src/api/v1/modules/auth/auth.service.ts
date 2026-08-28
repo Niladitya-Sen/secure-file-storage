@@ -1,12 +1,12 @@
-import BadRequestError from "../../../../common/errors/BadRequestError";
-import { generateToken } from "../../../../common/lib/jwt";
-import { prisma } from "../../../../common/lib/prisma";
-import { env } from "../../../../env";
+import BadRequestError from "../../../../common/errors/BadRequestError.ts";
+import { generateToken } from "../../../../common/lib/jwt.ts";
+import { prisma } from "../../../../common/lib/prisma.ts";
+import { env } from "../../../../env.ts";
 import type {
   LoginUserDto,
   RefreshTokenDto,
   RegisterUserDto,
-} from "./auth.dto";
+} from "./auth.dto.ts";
 import argon from "argon2";
 import crypto from "node:crypto";
 

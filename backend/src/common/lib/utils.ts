@@ -1,4 +1,4 @@
-import { env } from "../../env";
+import { env } from "../../env.ts";
 
 export function serializeBigInt<T>(value: T): T {
   return JSON.parse(

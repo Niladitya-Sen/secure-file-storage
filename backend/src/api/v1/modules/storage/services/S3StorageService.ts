@@ -1,16 +1,15 @@
 import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
+  S3Client
 } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   createPresignedPost,
   type PresignedPost,
 } from "@aws-sdk/s3-presigned-post";
-import { env } from "../../../../../env";
-import { MAX_FILE_SIZE } from "../../files/constants";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { env } from "../../../../../env.ts";
+import { MAX_FILE_SIZE } from "../../files/constants/index.ts";
 
 export default class S3StorageService {
   private readonly s3Client: S3Client;

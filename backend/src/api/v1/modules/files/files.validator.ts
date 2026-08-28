@@ -1,5 +1,5 @@
 import z from "zod";
-import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from "./constants";
+import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from "./constants/index.ts";
 
 export const UploadFileSchema = z
   .object({

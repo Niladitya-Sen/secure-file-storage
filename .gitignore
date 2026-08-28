@@ -51,4 +51,4 @@ backend/src/generated/prisma
 .windsurf
 skills-lock.json
 
-/backend/storage
+/backend/dist

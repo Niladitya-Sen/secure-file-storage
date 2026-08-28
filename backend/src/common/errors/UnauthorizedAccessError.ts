@@ -1,4 +1,4 @@
-import ApplicationError from "./ApplicationError";
+import ApplicationError from "./ApplicationError.ts";
 
 export default class UnauthorizedAccessError extends ApplicationError {
   constructor(message: string = "Unauthorized access") {

@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { validateRequest } from "../../../../common/middleware/validate-request";
-import { LoginUserSchema, RegisterUserSchema } from "./auth.validator";
-import type { ValidatedRequest } from "../../../../common/types/validated-request";
-import { authService } from "./auth.service";
-import validateJwt from "../../../../common/middleware/validate-jwt";
-import { env } from "../../../../env";
+import { validateRequest } from "../../../../common/middleware/validate-request.ts";
+import { LoginUserSchema, RegisterUserSchema } from "./auth.validator.ts";
+import type { ValidatedRequest } from "../../../../common/types/validated-request.ts";
+import { authService } from "./auth.service.ts";
+import validateJwt from "../../../../common/middleware/validate-jwt.ts";
+import { env } from "../../../../env.ts";
 
 const authController = Router();
 

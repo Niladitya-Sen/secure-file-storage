@@ -1,16 +1,15 @@
 import type { JsonValue } from "@prisma/client/runtime/client";
-import NotFoundError from "../../../../common/errors/NotFoundError";
-import { prisma } from "../../../../common/lib/prisma";
+import NotFoundError from "../../../../common/errors/NotFoundError.ts";
+import { prisma } from "../../../../common/lib/prisma.ts";
 import type {
   BulkCreateFolderDto,
   CreateFolderDto,
   DeleteFolderDto,
   ListFolderContentsDto,
   RenameFolderDto,
-} from "./folders.dto";
-import { env } from "../../../../env";
-import { buildShareUrl } from "../../../../common/lib/utils";
-import BadRequestError from "../../../../common/errors/BadRequestError";
+} from "./folders.dto.ts";
+import { buildShareUrl } from "../../../../common/lib/utils.ts";
+import BadRequestError from "../../../../common/errors/BadRequestError.ts";
 
 class FolderService {
   async createFolder(data: CreateFolderDto): Promise<void> {

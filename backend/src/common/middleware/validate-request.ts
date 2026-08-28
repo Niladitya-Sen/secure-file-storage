@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import z from "zod";
-import BadRequestError from "../errors/BadRequestError";
+import BadRequestError from "../errors/BadRequestError.ts";
 
 type ValidateRequestParams = Partial<
   Record<"params" | "query" | "body", z.ZodType>

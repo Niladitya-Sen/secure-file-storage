@@ -1,16 +1,16 @@
 import { Router } from "express";
-import { validateRequest } from "../../../../common/middleware/validate-request";
-import type { ValidatedRequest } from "../../../../common/types/validated-request";
+import { validateRequest } from "../../../../common/middleware/validate-request.ts";
+import type { ValidatedRequest } from "../../../../common/types/validated-request.ts";
 import {
   BulkCreateFolderSchema,
   CreateFolderSchema,
   DeleteFolderSchema,
   ListFolderContentsSchema,
   RenameFolderSchema,
-} from "./folders.validator";
-import { folderService } from "./folders.service";
-import { serializeBigInt } from "../../../../common/lib/utils";
-import validateJwt from "../../../../common/middleware/validate-jwt";
+} from "./folders.validator.ts";
+import { folderService } from "./folders.service.ts";
+import { serializeBigInt } from "../../../../common/lib/utils.ts";
+import validateJwt from "../../../../common/middleware/validate-jwt.ts";
 
 const foldersController = Router();
 

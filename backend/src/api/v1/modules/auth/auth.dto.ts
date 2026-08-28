@@ -3,7 +3,7 @@ import type {
   LoginUserSchema,
   RefreshTokenSchema,
   RegisterUserSchema,
-} from "./auth.validator";
+} from "./auth.validator.ts";
 
 export type RegisterUserDto = z.infer<typeof RegisterUserSchema>;
 export type LoginUserDto = z.infer<typeof LoginUserSchema>;

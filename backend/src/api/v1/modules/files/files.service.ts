@@ -1,10 +1,10 @@
 import crypto from "node:crypto";
-import BadRequestError from "../../../../common/errors/BadRequestError";
-import NotFoundError from "../../../../common/errors/NotFoundError";
-import { prisma } from "../../../../common/lib/prisma";
-import { buildShareUrl } from "../../../../common/lib/utils";
-import S3StorageService from "../storage/services/S3StorageService";
-import type { RenameFileDTO, UploadFileDTO } from "./files.dto";
+import BadRequestError from "../../../../common/errors/BadRequestError.ts";
+import NotFoundError from "../../../../common/errors/NotFoundError.ts";
+import { prisma } from "../../../../common/lib/prisma.ts";
+import { buildShareUrl } from "../../../../common/lib/utils.ts";
+import S3StorageService from "../storage/services/S3StorageService.ts";
+import type { RenameFileDTO, UploadFileDTO } from "./files.dto.ts";
 
 class FileService {
   private readonly storageService;

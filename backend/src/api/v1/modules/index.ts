@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { authController } from "./auth/auth.controller";
-import { filesController } from "./files/files.controller";
-import { foldersController } from "./folders/folders.controller";
+import { authController } from "./auth/auth.controller.ts";
+import { filesController } from "./files/files.controller.ts";
+import { foldersController } from "./folders/folders.controller.ts";
 
 const v1Router = Router();
 

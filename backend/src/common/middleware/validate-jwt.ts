@@ -1,10 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
 import { errors as joseErrors } from "jose";
-import BadRequestError from "../errors/BadRequestError";
-import { verifyToken } from "../lib/jwt";
-import ApplicationError from "../errors/ApplicationError";
-import UnauthorizedAccessError from "../errors/UnauthorizedAccessError";
-import type { RequestUser } from "../types/express";
+import BadRequestError from "../errors/BadRequestError.ts";
+import { verifyToken } from "../lib/jwt.ts";
+import ApplicationError from "../errors/ApplicationError.ts";
+import UnauthorizedAccessError from "../errors/UnauthorizedAccessError.ts";
+import type { RequestUser } from "../types/express.ts";
 
 export default async function validateJwt(
   req: Request,
