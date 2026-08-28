@@ -12,7 +12,7 @@ export const UploadFileSchema = z
     if (data.size > MAX_FILE_SIZE) {
       ctx.addIssue({
         code: "custom",
-        message: "File size exceeds the maximum limit of 100MB.",
+        message: `File size exceeds the maximum limit of ${MAX_FILE_SIZE / (1024 * 1024)}MB.`,
       });
 
       return z.NEVER;

@@ -10,6 +10,7 @@ import {
   type PresignedPost,
 } from "@aws-sdk/s3-presigned-post";
 import { env } from "../../../../../env";
+import { MAX_FILE_SIZE } from "../../files/constants";
 
 export default class S3StorageService {
   private readonly s3Client: S3Client;
@@ -32,7 +33,7 @@ export default class S3StorageService {
         "Content-Type": contentType,
       },
       Conditions: [
-        ["content-length-range", 1, 100 * 1024 * 1024],
+        ["content-length-range", 0, MAX_FILE_SIZE],
         ["eq", "$Content-Type", contentType],
       ],
       Expires: 5 * 60, // URL expires in 5 minutes
