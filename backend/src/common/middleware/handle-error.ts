@@ -8,10 +8,8 @@ export default function handleErrors(
   next: NextFunction,
 ) {
   if (err instanceof ApplicationError) {
-    console.log(err.name, err.toJSON());
     return res.status(err.getStatusCode()).json(err.toJSON());
   }
 
-  console.error("Unknown error:", err);
   return res.status(500).json({ message: "Internal Server Error" });
 }

@@ -1,37 +1,33 @@
+import crypto from "node:crypto";
 import BadRequestError from "../../../../common/errors/BadRequestError";
 import NotFoundError from "../../../../common/errors/NotFoundError";
 import { prisma } from "../../../../common/lib/prisma";
-import type StorageService from "../storage/interfaces/StorageService";
-import LocalStorageService from "../storage/services/LocalStorageService";
-import crypto from "node:crypto";
-import type { BulkUploadFolderDTO, RenameFileDTO } from "./files.dto";
-import { env } from "../../../../env";
 import { buildShareUrl } from "../../../../common/lib/utils";
+import S3StorageService from "../storage/services/S3StorageService";
+import type { RenameFileDTO, UploadFileDTO } from "./files.dto";
 
 class FileService {
-  private readonly storageService: StorageService;
+  private readonly storageService;
 
   constructor() {
-    this.storageService = new LocalStorageService();
+    this.storageService = new S3StorageService();
   }
 
   async uploadFile({
-    userId,
+    ownerId,
     folderId,
-    file,
-  }: {
-    userId: number;
-    folderId: string | null;
-    file: { buffer: Buffer; fileName: string; contentType: string };
-  }) {
+    fileName,
+    contentType,
+    size,
+  }: UploadFileDTO) {
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: ownerId },
       select: { id: true },
     });
 
     const folder = folderId
       ? await prisma.folder.findUnique({
-          where: { id: folderId },
+          where: { id: folderId, ownerId },
           select: { id: true, ownerId: true },
         })
       : null;
@@ -40,71 +36,26 @@ class FileService {
       throw new BadRequestError("User not found");
     }
 
-    if (folderId && folder?.ownerId !== userId) {
+    if (folderId && !folder) {
       throw new BadRequestError("Folder not found");
     }
 
     const key = crypto.randomUUID();
 
-    await this.storageService.upload(file.buffer, key, file.contentType);
+    const upload = await this.storageService.getUploadUrl(key, contentType);
 
     await prisma.file.create({
       data: {
-        name: file.fileName,
+        name: fileName,
         storageKey: key,
-        mimeType: file.contentType,
-        size: file.buffer.length,
-        ownerId: userId,
+        mimeType: contentType,
+        size: size,
+        ownerId: ownerId,
         folderId: folderId || null,
       },
     });
-  }
 
-  async bulkUploadFolder({ metadata, files, ownerId }: BulkUploadFolderDTO) {
-    const failedUploads: { fileName: string; error: string }[] = [];
-
-    for (const file of files) {
-      const folderId = metadata[file.fileName];
-
-      if (!folderId) {
-        failedUploads.push({
-          fileName: file.fileName,
-          error: "No folder ID found for this file",
-        });
-        continue;
-      }
-
-      try {
-        const key = crypto.randomUUID();
-
-        await this.storageService.upload(file.buffer, key, file.contentType);
-
-        await prisma.file.create({
-          data: {
-            name: file.fileName,
-            storageKey: key,
-            mimeType: file.contentType,
-            size: file.buffer.length,
-            ownerId,
-            folderId: folderId,
-          },
-        });
-      } catch (error) {
-        console.log(error);
-        failedUploads.push({
-          fileName: file.fileName,
-          error: (error as Error).message,
-        });
-      }
-
-      if (failedUploads.length > 0) {
-        throw new BadRequestError(
-          `Failed to upload the following files: ${failedUploads
-            .map((f) => `${f.fileName}`)
-            .join(", ")}`,
-        );
-      }
-    }
+    return upload;
   }
 
   async renameFile({
@@ -160,11 +111,13 @@ class FileService {
       throw new NotFoundError("File not found");
     }
 
-    const fileBuffer = await this.storageService.download(file.storageKey);
+    const downloadUrl = await this.storageService.getDownloadUrl(
+      file.storageKey,
+    );
 
     return {
       file: file,
-      buffer: fileBuffer,
+      downloadUrl: downloadUrl,
     };
   }
 
@@ -271,11 +224,13 @@ class FileService {
       throw new NotFoundError("File not found");
     }
 
-    const fileBuffer = await this.storageService.download(file.storageKey);
+    const downloadUrl = await this.storageService.getDownloadUrl(
+      file.storageKey,
+    );
 
     return {
       file: file,
-      buffer: fileBuffer,
+      downloadUrl: downloadUrl,
     };
   }
 

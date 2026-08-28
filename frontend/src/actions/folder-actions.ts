@@ -123,22 +123,6 @@ export function useUploadFolderMutation() {
 
         await Promise.allSettled(uploadPromises);
 
-        uploadBatch.forEach((file) => {
-          queryClient.invalidateQueries({
-            queryKey: file
-              ? [
-                  "folder",
-                  data?.folders[
-                    file.webkitRelativePath.substring(
-                      0,
-                      file.webkitRelativePath.lastIndexOf("/"),
-                    )
-                  ],
-                ]
-              : ["folder"],
-          });
-        });
-
         currentIndex += MAX_CONCURRENT_UPLOADS;
       }
     },

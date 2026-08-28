@@ -32,7 +32,7 @@ export default function SharedFiles() {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <Navbar title="Shared Files" />
+      <Navbar component={<p className="text-base">Shared Files</p>} />
       <div className="px-4 py-4 flex flex-1 overflow-hidden">
         <div className="border border-border rounded-lg flex flex-col flex-1 overflow-hidden">
           <Table className="rounded-lg">

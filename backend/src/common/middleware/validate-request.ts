@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import z from "zod";
+import BadRequestError from "../errors/BadRequestError";
 
 type ValidateRequestParams = Partial<
   Record<"params" | "query" | "body", z.ZodType>
@@ -11,13 +12,8 @@ export function validateRequest(params: ValidateRequestParams) {
       const result = params.params.safeParse(req.params);
 
       if (!result.success) {
-        return res.status(400).json({
-          error: "Invalid request parameters",
-          details: result.error.issues.map((issue) => ({
-            path: issue.path,
-            message: issue.message,
-          })),
-        });
+        const firstIssue = result.error.issues[0];
+        throw new BadRequestError(firstIssue.message);
       } else {
         (req as any).validatedParams = result.data;
       }
@@ -27,13 +23,8 @@ export function validateRequest(params: ValidateRequestParams) {
       const result = params.query.safeParse(req.query);
 
       if (!result.success) {
-        return res.status(400).json({
-          error: "Invalid request parameters",
-          details: result.error.issues.map((issue) => ({
-            path: issue.path,
-            message: issue.message,
-          })),
-        });
+        const firstIssue = result.error.issues[0];
+        throw new BadRequestError(firstIssue.message);
       } else {
         (req as any).validatedQuery = result.data;
       }
@@ -43,13 +34,8 @@ export function validateRequest(params: ValidateRequestParams) {
       const result = params.body.safeParse(req.body);
 
       if (!result.success) {
-        return res.status(400).json({
-          error: "Invalid request parameters",
-          details: result.error.issues.map((issue) => ({
-            path: issue.path,
-            message: issue.message,
-          })),
-        });
+        const firstIssue = result.error.issues[0];
+        throw new BadRequestError(firstIssue.message);
       } else {
         (req as any).validatedBody = result.data;
       }

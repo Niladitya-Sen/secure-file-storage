@@ -8,7 +8,8 @@ import {
   CircleAlert,
   X,
 } from "lucide-react";
-import { useDeferredValue, useState } from "react";
+import { useState } from "react";
+import { List, RowComponentProps } from "react-window";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 
@@ -16,8 +17,6 @@ export default function UploadsProgressViewer() {
   const [open, setOpen] = useState(true);
   const uploadFileState = useDrive((state) => state.uploadFileState);
   const setUploadFileState = useDrive((state) => state.setUploadFileState);
-
-  const deferredUploadFileState = useDeferredValue(uploadFileState);
 
   return (
     <div
@@ -52,25 +51,50 @@ export default function UploadsProgressViewer() {
             "max-h-80 h-(--collapsible-panel-height) transition-[height] duration-200 ease-[ease-out] data-ending-style:h-0 data-starting-style:h-0 overflow-y-auto my-4 flex flex-col gap-2"
           }
         >
-          {Object.entries(deferredUploadFileState).map(([fileName, state]) => (
-            <div
-              key={fileName}
-              className="flex items-center justify-between gap-4 mb-2 last:mb-0 px-4"
-            >
-              <div className="flex-1">
-                <p className="text-sm font-medium max-w-65 truncate">
-                  {fileName}
-                </p>
-              </div>
-              {state === "uploading" && <Spinner />}
-              {state === "error" && <CircleAlert className="text-red-600" />}
-              {state === "success" && (
-                <CheckCircle2 className="text-green-600" />
-              )}
-            </div>
-          ))}
+          <List
+            rowComponent={FileProgressRow}
+            rowCount={Object.keys(uploadFileState).length}
+            rowHeight={30}
+            rowProps={{
+              uploadState: Object.entries(uploadFileState).map(
+                ([fileName, state]) => ({
+                  fileName,
+                  state,
+                }),
+              ),
+            }}
+          />
         </CollapsibleContent>
       </Collapsible>
+    </div>
+  );
+}
+
+function FileProgressRow({
+  index,
+  uploadState,
+  style,
+}: RowComponentProps<{
+  uploadState: {
+    fileName: string;
+    state: "uploading" | "success" | "error";
+  }[];
+}>) {
+  const currentUploadState = uploadState[index];
+  const { fileName, state } = currentUploadState;
+
+  return (
+    <div
+      key={fileName}
+      className="flex items-center justify-between gap-4 px-4"
+      style={style}
+    >
+      <div className="flex-1">
+        <p className="text-sm font-medium max-w-65 truncate">{fileName}</p>
+      </div>
+      {state === "uploading" && <Spinner />}
+      {state === "error" && <CircleAlert className="text-red-600" />}
+      {state === "success" && <CheckCircle2 className="text-green-600" />}
     </div>
   );
 }

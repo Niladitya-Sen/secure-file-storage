@@ -1,0 +1,51 @@
+export const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+
+export const ALLOWED_FILE_TYPES: Record<string, string[]> = {
+  jpg: ["image/jpeg", "image/jpg"],
+  png: ["image/png"],
+  svg: ["image/svg+xml"],
+  gif: ["image/gif"],
+  pdf: ["application/pdf"],
+  doc: [
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+  docx: [
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+  xls: [
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ],
+  xlsx: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+  ppt: [
+    "application/vnd.ms-powerpoint",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ],
+  pptx: [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  ],
+  txt: ["text/plain"],
+  csv: ["text/csv"],
+  mp3: ["audio/mpeg"],
+  wav: ["audio/wav"],
+  mp4: ["video/mp4"],
+  avi: ["video/x-msvideo"],
+  mov: ["video/quicktime"],
+  mkv: ["video/x-matroska"],
+  zip: ["application/zip"],
+  rar: ["application/x-rar-compressed"],
+  tar: ["application/x-tar"],
+  "7z": ["application/x-7z-compressed"],
+  html: ["text/html"],
+  css: ["text/css"],
+  js: ["text/javascript"],
+  json: ["application/json"],
+  xml: ["application/xml"],
+  java: ["text/x-java-source"],
+  py: ["text/x-python"],
+  rb: ["text/x-ruby"],
+  php: ["application/x-httpd-php"],
+  go: ["text/x-go"],
+  rs: ["text/x-rust"],
+};

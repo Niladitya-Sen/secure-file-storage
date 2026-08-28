@@ -15,6 +15,7 @@ app.use(
     origin: "http://localhost:3000",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
+    exposedHeaders: ["Content-Disposition", "Content-Type"],
   }),
 );
 app.use(cookieParser());

@@ -1,25 +1,7 @@
-import {
-  Download,
-  Edit3,
-  EllipsisVertical,
-  ExternalLink,
-  Eye,
-  Folder,
-  Share2,
-  Trash2,
-} from "lucide-react";
+import { Folder } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Button } from "../../ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
-import { useDrive } from "@/store/drive-store";
+import FolderDropdownMenu from "../dropdowns/folder-dropdown-menu";
 
 export default function FolderCard({
   id,
@@ -28,12 +10,6 @@ export default function FolderCard({
   createdAt,
 }: Readonly<Folder>) {
   const router = useRouter();
-  const openFolderDeleteDialog = useDrive(
-    (state) => state.openFolderDeleteDialog,
-  );
-  const openFolderRenameDialog = useDrive(
-    (state) => state.openFolderRenameDialog,
-  );
 
   return (
     <div className="bg-card rounded-lg flex items-center justify-start gap-4 border border-border overflow-hidden w-full max-w-auto md:max-w-75">
@@ -50,64 +26,11 @@ export default function FolderCard({
             render={<span className="truncate">{name}</span>}
           ></TooltipTrigger>
           <TooltipContent>
-            <p>{name}</p>
+            <p className="break-all">{name}</p>
           </TooltipContent>
         </Tooltip>
       </button>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button size={"icon-lg"} variant="ghost" className="ml-auto mr-2">
-              <EllipsisVertical />
-            </Button>
-          }
-        ></DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className={"min-w-50"}>
-          <DropdownMenuGroup>
-            <DropdownMenuItem
-              onClick={() => router.push(`/drive/folders/${id}`)}
-            >
-              <Eye />
-              Open
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => window.open(`/drive/folders/${id}`, "_blank")}
-            >
-              <ExternalLink />
-              Open in new tab
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem
-              onClick={() =>
-                openFolderRenameDialog({
-                  id,
-                  name,
-                  path,
-                  createdAt,
-                })
-              }
-            >
-              <Edit3 />
-              Rename
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() =>
-                openFolderDeleteDialog({
-                  id,
-                  name,
-                  path,
-                  createdAt,
-                })
-              }
-            >
-              <Trash2 />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <FolderDropdownMenu folder={{ id, name, path, createdAt }} />
     </div>
   );
 }

@@ -1,8 +1,6 @@
 import { toast } from "@/components/ui/toast";
-import { env } from "@/env";
 import authFetch from "@/lib/auth-fetch";
 import { copyToClipboard } from "@/lib/utils";
-import { useAuth } from "@/store/auth-store";
 import { useDrive } from "@/store/drive-store";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -11,26 +9,42 @@ type UploadOptions = {
   folderId?: string;
 };
 
-export function uploadFile({ file, folderId }: UploadOptions): Promise<any> {
+export async function uploadFile({ file, folderId }: UploadOptions) {
+  const [data, error] = await authFetch<{
+    url: string;
+    fields: {
+      [x: string]: string;
+    };
+  }>("/files/upload", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      fileName: file.name,
+      contentType: file.type,
+      size: file.size,
+      folderId: folderId,
+    }),
+  });
+
+  if (error || !data) {
+    useDrive.getState().updateUploadFileState(file.name, "error");
+    return;
+  }
+
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
 
-    xhr.open("POST", `${env.NEXT_PUBLIC_API_URL}/files/upload`);
-
-    xhr.withCredentials = true;
-
-    xhr.setRequestHeader(
-      "Authorization",
-      `Bearer ${useAuth.getState().accessToken}`,
-    );
+    xhr.open("POST", data.url);
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
         useDrive.getState().updateUploadFileState(file.name, "success");
-        resolve(JSON.parse(xhr.responseText));
+        resolve(xhr.responseText);
       } else {
         useDrive.getState().updateUploadFileState(file.name, "error");
-        reject(JSON.parse(xhr.responseText));
+        reject(new Error(xhr.responseText));
       }
     };
 
@@ -44,11 +58,11 @@ export function uploadFile({ file, folderId }: UploadOptions): Promise<any> {
 
     const formData = new FormData();
 
-    formData.append("file", file);
-
-    if (folderId) {
-      formData.append("folderId", folderId);
+    for (const [key, value] of Object.entries(data.fields)) {
+      formData.append(key, value);
     }
+
+    formData.append("file", file);
 
     xhr.send(formData);
   });

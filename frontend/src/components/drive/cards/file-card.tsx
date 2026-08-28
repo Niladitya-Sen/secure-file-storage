@@ -35,7 +35,7 @@ export default function FileCard({ name, mimeType, ...rest }: Readonly<File_>) {
             render={<span className="truncate">{name}</span>}
           ></TooltipTrigger>
           <TooltipContent>
-            <p>{name}</p>
+            <p className="break-all">{name}</p>
           </TooltipContent>
         </Tooltip>
       </button>

@@ -70,9 +70,13 @@ export default function DeleteFileOrFolderDialog() {
     >
       <DialogContent className={"sm:max-w-lg"}>
         <DialogHeader>
-          <DialogTitle className={"text-lg"}>
-            Delete &apos;
-            {fileToDelete ? fileToDelete.name : folderToDelete?.name}&apos; ?
+          <DialogTitle className={"text-lg max-w-sm"}>
+            Delete{" "}
+            <span className="break-all">
+              &apos;
+              {fileToDelete ? fileToDelete.name : folderToDelete?.name}&apos;
+            </span>{" "}
+            ?
           </DialogTitle>
           <DialogDescription className={"text-base"}>
             Are you sure you want to delete this{" "}

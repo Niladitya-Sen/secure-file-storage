@@ -1,9 +1,11 @@
 "use client";
 
 import ViewFile from "@/components/drive/view-file";
+import { Spinner } from "@/components/ui/spinner";
 import { env } from "@/env";
 import { mimeTypeToIcon } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
 
@@ -18,33 +20,44 @@ export default function SharedWithMe() {
         `${env.NEXT_PUBLIC_API_URL}/files/${token}/shared`,
       );
 
-      const contentType = response.headers.get("Content-Type");
-      const fileName = response.headers.get("file-name");
-
       if (!response.ok) {
         const err = await response.json();
         throw new Error(err.message || "Failed to fetch shared file");
       }
 
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
+      const data: {
+        file: File_;
+        downloadUrl: string;
+      } = await response.json();
 
-      return { blobUrl, contentType, fileName };
+      return {
+        downloadUrl: data.downloadUrl,
+        contentType: data.file.mimeType,
+        fileName: data.file.name,
+      };
     },
     retry: false,
     enabled: !!token,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   if (isFetching) {
-    return <div>Loading file...</div>;
+    return (
+      <div className="h-dvh flex items-center justify-center">
+        <Spinner className="w-8 h-8" />
+      </div>
+    );
   }
 
-  if (error) {
-    return <div>Error loading file: {(error as Error).message}</div>;
-  }
-
-  if (!data) {
-    return <div>No file data available</div>;
+  if (error || !data) {
+    return (
+      <div className="h-dvh flex flex-col gap-2 text-lg items-center justify-center">
+        <AlertCircle />
+        Error loading file: {(error as Error).message}
+      </div>
+    );
   }
 
   return (
@@ -58,8 +71,8 @@ export default function SharedWithMe() {
         />
         {data?.fileName}
       </div>
-      <div className="flex flex-1">
-        <ViewFile mimeType={data?.contentType || ""} url={data?.blobUrl} />
+      <div className="flex flex-1 mt-4">
+        <ViewFile mimeType={data?.contentType || ""} url={data?.downloadUrl} />
       </div>
     </main>
   );

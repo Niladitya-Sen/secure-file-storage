@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { authFetchBlob } from "@/lib/auth-fetch";
+import authFetch from "@/lib/auth-fetch";
 import { mimeTypeToIcon } from "@/lib/utils";
 import { useDrive } from "@/store/drive-store";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +26,10 @@ export default function PreviewDialog() {
         throw new Error("No file selected");
       }
 
-      const [data, error] = await authFetchBlob(previewFile.viewUrl);
+      const [data, error] = await authFetch<{
+        file: File_;
+        downloadUrl: string;
+      }>(previewFile.viewUrl);
 
       if (error) {
         throw error;
@@ -36,11 +39,12 @@ export default function PreviewDialog() {
         throw new Error("No data received");
       }
 
-      const blobUrl = URL.createObjectURL(data);
-
-      return { blobUrl };
+      return { url: data.downloadUrl };
     },
     enabled: !!previewFile,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
   });
 
   if (!previewFile) {
@@ -79,9 +83,7 @@ export default function PreviewDialog() {
         </DialogHeader>
         <div className="flex flex-col flex-2 items-center justify-center overflow-y-auto">
           {isFetching && <p>Loading...</p>}
-          {data && (
-            <ViewFile mimeType={previewFile.mimeType} url={data.blobUrl} />
-          )}
+          {data && <ViewFile mimeType={previewFile.mimeType} url={data.url} />}
           {error && <p>Error occurred while fetching the file.</p>}
         </div>
       </DialogContent>

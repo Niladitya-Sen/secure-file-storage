@@ -32,7 +32,7 @@ type NavbarProps =
       path: PathSegment[];
     }
   | {
-      title: string;
+      component: React.ReactNode;
     };
 
 export default function Navbar(props: Readonly<NavbarProps>) {
@@ -47,11 +47,7 @@ export default function Navbar(props: Readonly<NavbarProps>) {
       <SidebarTrigger />
       <Separator orientation="vertical" className={"mx-2"} />
 
-      {"path" in props ? (
-        <Path path={props.path} />
-      ) : (
-        <p className="text-base">{props.title}</p>
-      )}
+      {"path" in props ? <Path path={props.path} /> : props.component}
 
       <div className="ml-auto flex items-center gap-2">
         <Popover>
@@ -112,19 +108,25 @@ function Path({
 }: Readonly<{
   path: PathSegment[];
 }>) {
-  const segmentsToShow = path.slice(-MAX_BREADCRUMB_ITEMS + 1); // -1 because we always show "Home" and the current folder
+  const segmentsToShow = path.slice(-MAX_BREADCRUMB_ITEMS + 1);
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink render={<Link href="/drive" />}>Home</BreadcrumbLink>
+          <BreadcrumbLink
+            className="text-foreground"
+            render={<Link href="/drive" />}
+          >
+            Home
+          </BreadcrumbLink>
         </BreadcrumbItem>
-        {path.length > 0 && <BreadcrumbSeparator />}
+        {path.length > 0 && <BreadcrumbSeparator className="text-foreground" />}
         {path.length >= MAX_BREADCRUMB_ITEMS && (
           <>
             <BreadcrumbItem>
               <BreadcrumbLink
+                className="text-foreground"
                 render={
                   <Link
                     href={`/drive/folders/${path.at(-MAX_BREADCRUMB_ITEMS)?.id}`}
@@ -134,19 +136,22 @@ function Path({
                 <Ellipsis />
               </BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator />
+            <BreadcrumbSeparator className="text-foreground" />
           </>
         )}
         {segmentsToShow.map((segment, index) => (
           <React.Fragment key={segment.id}>
             <BreadcrumbItem>
               <BreadcrumbLink
+                className="text-foreground"
                 render={<Link href={`/drive/folders/${segment.id}`} />}
               >
                 {segment.name}
               </BreadcrumbLink>
             </BreadcrumbItem>
-            {index < segmentsToShow.length - 1 && <BreadcrumbSeparator />}
+            {index < segmentsToShow.length - 1 && (
+              <BreadcrumbSeparator className="text-foreground" />
+            )}
           </React.Fragment>
         ))}
       </BreadcrumbList>

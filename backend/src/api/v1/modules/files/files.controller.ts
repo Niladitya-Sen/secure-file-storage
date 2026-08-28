@@ -4,55 +4,40 @@ import { validateRequest } from "../../../../common/middleware/validate-request"
 import type { ValidatedRequest } from "../../../../common/types/validated-request";
 import { fileService } from "./files.service";
 import {
-  BulkUploadFolderSchema,
   DeleteFileSchema,
   RenameFileSchema,
   ShareFileSchema,
-  UploadFilesSchema,
+  UploadFileSchema,
   ViewFileSchema,
   ViewSharedFileSchema,
 } from "./files.validator";
 import validateJwt from "../../../../common/middleware/validate-jwt";
 import { serializeBigInt } from "../../../../common/lib/utils";
 
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 100 * 1024 * 1024 }, // Limit file size to 100MB
-});
-
 const filesController = Router();
 
 filesController.post(
   "/upload",
   validateJwt,
-  upload.single("file"),
   validateRequest({
-    body: UploadFilesSchema,
+    body: UploadFileSchema,
   }),
   async (
-    req: ValidatedRequest<undefined, undefined, typeof UploadFilesSchema>,
+    req: ValidatedRequest<undefined, undefined, typeof UploadFileSchema>,
     res,
   ) => {
     const userId = req.user?.id!;
-    const { folderId } = req.validatedBody!;
+    const { folderId, fileName, contentType, size } = req.validatedBody!;
 
-    const file = req.file;
-
-    if (!file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-
-    await fileService.uploadFile({
-      userId: userId,
-      folderId: folderId ?? null,
-      file: {
-        buffer: file.buffer,
-        fileName: file.originalname,
-        contentType: file.mimetype,
-      },
+    const upload = await fileService.uploadFile({
+      ownerId: userId,
+      folderId: folderId,
+      fileName,
+      contentType,
+      size,
     });
 
-    return res.status(201).json({ message: "File uploaded successfully" });
+    return res.status(200).json(upload);
   },
 );
 
@@ -63,36 +48,6 @@ filesController.get("/shared", validateJwt, async (req, res) => {
 
   return res.status(200).json(serializeBigInt(sharedFiles));
 });
-
-filesController.post(
-  "/bulk-folder",
-  validateJwt,
-  upload.any(),
-  validateRequest({
-    body: BulkUploadFolderSchema,
-  }),
-  async (
-    req: ValidatedRequest<undefined, undefined, typeof BulkUploadFolderSchema>,
-    res,
-  ) => {
-    const userId = req.user?.id!;
-    const { metadata } = req.validatedBody!;
-
-    const files = (req.files as Express.Multer.File[]).map((file) => ({
-      buffer: file.buffer,
-      fileName: file.originalname,
-      contentType: file.mimetype,
-    }));
-
-    await fileService.bulkUploadFolder({
-      metadata,
-      files,
-      ownerId: userId,
-    });
-
-    return res.status(201).json({ message: "Files uploaded successfully" });
-  },
-);
 
 filesController.put(
   "/:fileId/rename",
@@ -153,12 +108,7 @@ filesController.get(
 
     const file = await fileService.getFile(fileId, userId);
 
-    res.setHeader("Content-Type", file.file.mimeType);
-    res.setHeader(
-      "Content-Disposition",
-      `inline; filename="${file.file.name}"`,
-    );
-    res.send(file.buffer);
+    return res.status(200).json(serializeBigInt(file));
   },
 );
 
@@ -175,12 +125,7 @@ filesController.get(
 
     const file = await fileService.getFile(fileId, userId);
 
-    res.setHeader("Content-Type", file.file.mimeType);
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${file.file.name}"`,
-    );
-    res.send(file.buffer);
+    return res.status(200).json(serializeBigInt(file));
   },
 );
 
@@ -226,12 +171,9 @@ filesController.get(
   ) => {
     const { token } = req.validatedParams!;
 
-    const { file, buffer } = await fileService.getSharedFile(token);
+    const file = await fileService.getSharedFile(token);
 
-    res.setHeader("Content-Type", file.mimeType);
-    res.setHeader("file-name", file.name);
-    res.setHeader("Content-Disposition", `inline; filename="${file.name}"`);
-    res.send(buffer);
+    return res.status(200).json(serializeBigInt(file));
   },
 );
 

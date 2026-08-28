@@ -70,6 +70,8 @@ export default function DriveSidebar() {
       if (target.files) {
         const files = Array.from(target.files);
 
+        console.log(files);
+
         if (files.length === 0) {
           toast.add({
             title: "No files selected",

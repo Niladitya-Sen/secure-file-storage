@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
-import { authFetchBlob } from "@/lib/auth-fetch";
+import authFetch from "@/lib/auth-fetch";
 import { copyToClipboard } from "@/lib/utils";
 import { useDrive } from "@/store/drive-store";
 import {
@@ -23,7 +23,6 @@ import {
   Download,
   Edit3,
   EllipsisVertical,
-  ExternalLink,
   Eye,
   Share2,
   Trash2,
@@ -71,7 +70,10 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
   }
 
   async function handleFileDownload() {
-    const [data, error] = await authFetchBlob(file.downloadUrl);
+    const [data, error] = await authFetch<{
+      file: File_;
+      downloadUrl: string;
+    }>(file.downloadUrl);
 
     if (error) {
       throw error;
@@ -81,10 +83,16 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
       throw new Error("No data received");
     }
 
-    const blobUrl = URL.createObjectURL(data);
+    const response = await fetch(data.downloadUrl);
+
+    if (!response.ok) {
+      throw new Error("Failed to download file");
+    }
+
+    const blob = await response.blob();
 
     const link = document.createElement("a");
-    link.href = blobUrl;
+    link.href = URL.createObjectURL(blob);
     link.download = file.name;
     document.body.appendChild(link);
     link.click();
@@ -104,10 +112,6 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
           <DropdownMenuItem onClick={handleOpenPreviewDialog}>
             <Eye />
             Preview
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <ExternalLink />
-            Open in new tab
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
@@ -149,7 +153,7 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
               </DropdownMenuItem>
             </>
           )}
-          <DropdownMenuItem onClick={handleDelete}>
+          <DropdownMenuItem variant="destructive" onClick={handleDelete}>
             <Trash2 />
             Delete
           </DropdownMenuItem>

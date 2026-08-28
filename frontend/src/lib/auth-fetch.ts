@@ -49,7 +49,7 @@ export default async function authFetch<T>(
 export async function authFetchBlob(
   uri: string,
   options?: RequestInit,
-): Promise<[Blob | null, null | Record<string, any>]> {
+): Promise<[Blob | null, Response | null, null | Record<string, any>]> {
   const accessToken = useAuth.getState().accessToken;
 
   const response = await fetch(`${env.NEXT_PUBLIC_API_URL}${uri}`, {
@@ -67,6 +67,7 @@ export async function authFetchBlob(
     if (success === null) {
       return [
         null,
+        null,
         { code: "REFRESH_IN_PROGRESS", message: "Refresh in progress" },
       ];
     }
@@ -77,16 +78,16 @@ export async function authFetchBlob(
       if (!window.location.pathname.startsWith("/auth")) {
         window.location.href = "/auth/login";
       }
-      return [null, { code: "REFRESH_FAILED", message: "Unauthorized" }];
+      return [null, null, { code: "REFRESH_FAILED", message: "Unauthorized" }];
     }
   }
 
   if (!response.ok) {
     const errorData = await response.json();
-    return [null, errorData];
+    return [null, null, errorData];
   }
 
   const data = await response.blob();
 
-  return [data as Blob, null];
+  return [data as Blob, response, null];
 }
