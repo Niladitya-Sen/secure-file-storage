@@ -12,7 +12,7 @@ app.disable("x-powered-by");
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: env.FRONTEND_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
     exposedHeaders: ["Content-Disposition", "Content-Type"],
