@@ -10,7 +10,7 @@ import {
 import Link from "next/link";
 import React from "react";
 import { Separator } from "../ui/separator";
-import { SidebarTrigger } from "../ui/sidebar";
+import { SidebarTrigger, useSidebar } from "../ui/sidebar";
 import {
   Popover,
   PopoverContent,
@@ -24,8 +24,7 @@ import { Button } from "../ui/button";
 import { useAuth } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-
-const MAX_BREADCRUMB_ITEMS = 5; // includes "Home" and the current folder
+import { MAX_BREADCRUMB_ITEMS } from "@/constants";
 
 type NavbarProps =
   | {
@@ -38,6 +37,7 @@ type NavbarProps =
 export default function Navbar(props: Readonly<NavbarProps>) {
   const user = useAuth((state) => state.user);
   const logout = useAuth((state) => state.logout);
+  const { isMobile } = useSidebar();
 
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -52,7 +52,7 @@ export default function Navbar(props: Readonly<NavbarProps>) {
       <div className="ml-auto flex items-center gap-2">
         <Popover>
           <PopoverTrigger render={<Button variant="outline" />}>
-            {user?.email}
+            {isMobile ? user?.email.charAt(0).toUpperCase() : user?.email}
           </PopoverTrigger>
           <PopoverContent align="start">
             <PopoverHeader>

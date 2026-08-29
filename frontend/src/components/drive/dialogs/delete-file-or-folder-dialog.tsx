@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { useHandleEnterPress } from "@/hooks/use-handle-enter-press";
 import { useDrive } from "@/store/drive-store";
 
 export default function DeleteFileOrFolderDialog() {
@@ -20,6 +21,12 @@ export default function DeleteFileOrFolderDialog() {
   const folderToDelete = useDrive((state) => state.folderToDelete);
   const closeDeleteDialog = useDrive((state) => state.closeDeleteDialog);
   const currentFolderId = useDrive((state) => state.currentFolderId);
+
+  useHandleEnterPress(() => {
+    if (open) {
+      handleDelete();
+    }
+  });
 
   const deleteFileMutation = useDeleteFileMutation();
   const deleteFolderMutation = useDeleteFolderMutation();

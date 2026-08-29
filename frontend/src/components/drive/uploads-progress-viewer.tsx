@@ -12,6 +12,11 @@ import { useState } from "react";
 import { List, RowComponentProps } from "react-window";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 
 export default function UploadsProgressViewer() {
   const [open, setOpen] = useState(true);
@@ -54,7 +59,7 @@ export default function UploadsProgressViewer() {
           <List
             rowComponent={FileProgressRow}
             rowCount={Object.keys(uploadFileState).length}
-            rowHeight={30}
+            rowHeight={32}
             rowProps={{
               uploadState: Object.entries(uploadFileState).map(
                 ([fileName, state]) => ({
@@ -82,6 +87,7 @@ function FileProgressRow({
 }>) {
   const currentUploadState = uploadState[index];
   const { fileName, state } = currentUploadState;
+  const uploadFilesError = useDrive((state) => state.uploadFilesError);
 
   return (
     <div
@@ -92,9 +98,23 @@ function FileProgressRow({
       <div className="flex-1">
         <p className="text-sm font-medium max-w-65 truncate">{fileName}</p>
       </div>
-      {state === "uploading" && <Spinner />}
-      {state === "error" && <CircleAlert className="text-red-600" />}
-      {state === "success" && <CheckCircle2 className="text-green-600" />}
+      <HoverCard>
+        <HoverCardTrigger
+          delay={0}
+          closeDelay={0}
+          className={"cursor-pointer -mr-2 [&_svg]:scale-125"}
+          render={<Button variant={"ghost"} size={"icon"}></Button>}
+        >
+          {state === "uploading" && <Spinner />}
+          {state === "error" && <CircleAlert className="text-red-600" />}
+          {state === "success" && <CheckCircle2 className="text-green-600" />}
+        </HoverCardTrigger>
+        <HoverCardContent side="top" align="center" className={"w-fit"}>
+          {state === "uploading" && <p>Uploading...</p>}
+          {state === "success" && <p>Upload successful</p>}
+          {state === "error" && <p>{uploadFilesError[fileName]}</p>}
+        </HoverCardContent>
+      </HoverCard>
     </div>
   );
 }

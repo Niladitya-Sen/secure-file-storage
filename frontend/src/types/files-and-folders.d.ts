@@ -5,9 +5,11 @@ type Folder = {
   id: string;
   path: PathSegment[];
   createdAt: string;
+  visibility: Visibility;
+  shareUrl: string | null;
 };
 
-type FileVisibility = "PRIVATE" | "PUBLIC";
+type Visibility = "PRIVATE" | "PUBLIC";
 
 type File_ = {
   name: string;
@@ -15,7 +17,7 @@ type File_ = {
   createdAt: string;
   size: number;
   mimeType: string;
-  visibility: FileVisibility;
+  visibility: Visibility;
   viewUrl: string;
   downloadUrl: string;
   shareUrl: string | null;
@@ -28,5 +30,9 @@ type FolderContents = {
 };
 
 type SharedFile = File_ & {
+  sharedAt: string;
+};
+
+type SharedFolder = Folder & {
   sharedAt: string;
 };

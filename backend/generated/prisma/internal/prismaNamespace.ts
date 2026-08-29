@@ -401,6 +401,7 @@ export const ModelName = {
   Folder: 'Folder',
   File: 'File',
   FileShare: 'FileShare',
+  FolderShare: 'FolderShare',
   RefreshToken: 'RefreshToken'
 } as const
 
@@ -417,7 +418,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "folder" | "file" | "fileShare" | "refreshToken"
+    modelProps: "user" | "folder" | "file" | "fileShare" | "folderShare" | "refreshToken"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -717,6 +718,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    FolderShare: {
+      payload: Prisma.$FolderSharePayload<ExtArgs>
+      fields: Prisma.FolderShareFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FolderShareFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FolderShareFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>
+        }
+        findFirst: {
+          args: Prisma.FolderShareFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FolderShareFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>
+        }
+        findMany: {
+          args: Prisma.FolderShareFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>[]
+        }
+        create: {
+          args: Prisma.FolderShareCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>
+        }
+        createMany: {
+          args: Prisma.FolderShareCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FolderShareCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>[]
+        }
+        delete: {
+          args: Prisma.FolderShareDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>
+        }
+        update: {
+          args: Prisma.FolderShareUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>
+        }
+        deleteMany: {
+          args: Prisma.FolderShareDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FolderShareUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FolderShareUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>[]
+        }
+        upsert: {
+          args: Prisma.FolderShareUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FolderSharePayload>
+        }
+        aggregate: {
+          args: Prisma.FolderShareAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFolderShare>
+        }
+        groupBy: {
+          args: Prisma.FolderShareGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FolderShareGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FolderShareCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FolderShareCountAggregateOutputType> | number
+        }
+      }
+    }
     RefreshToken: {
       payload: Prisma.$RefreshTokenPayload<ExtArgs>
       fields: Prisma.RefreshTokenFieldRefs
@@ -847,6 +922,7 @@ export const FolderScalarFieldEnum = {
   name: 'name',
   parentId: 'parentId',
   ownerId: 'ownerId',
+  visibility: 'visibility',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   path: 'path'
@@ -881,6 +957,18 @@ export const FileShareScalarFieldEnum = {
 } as const
 
 export type FileShareScalarFieldEnum = (typeof FileShareScalarFieldEnum)[keyof typeof FileShareScalarFieldEnum]
+
+
+export const FolderShareScalarFieldEnum = {
+  id: 'id',
+  folderId: 'folderId',
+  token: 'token',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  expiresAt: 'expiresAt'
+} as const
+
+export type FolderShareScalarFieldEnum = (typeof FolderShareScalarFieldEnum)[keyof typeof FolderShareScalarFieldEnum]
 
 
 export const RefreshTokenScalarFieldEnum = {
@@ -980,6 +1068,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'FolderVisibility'
+ */
+export type EnumFolderVisibilityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FolderVisibility'>
+    
+
+
+/**
+ * Reference to a field of type 'FolderVisibility[]'
+ */
+export type ListEnumFolderVisibilityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FolderVisibility[]'>
     
 
 
@@ -1193,6 +1295,7 @@ export type GlobalOmitConfig = {
   folder?: Prisma.FolderOmit
   file?: Prisma.FileOmit
   fileShare?: Prisma.FileShareOmit
+  folderShare?: Prisma.FolderShareOmit
   refreshToken?: Prisma.RefreshTokenOmit
 }
 

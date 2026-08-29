@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const FolderVisibility = {
+  PUBLIC: 'PUBLIC',
+  PRIVATE: 'PRIVATE'
+} as const
+
+export type FolderVisibility = (typeof FolderVisibility)[keyof typeof FolderVisibility]
+
+
 export const FileVisibility = {
   PUBLIC: 'PUBLIC',
   PRIVATE: 'PRIVATE'

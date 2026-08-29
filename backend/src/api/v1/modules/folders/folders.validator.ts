@@ -22,3 +22,22 @@ export const RenameFolderSchema = z.object({
 export const DeleteFolderSchema = z.object({
   folderId: z.string(),
 });
+
+export const ShareFolderSchema = z.object({
+  folderId: z.string(),
+});
+
+export const ViewSharedFolderSchema = z.object({
+  token: z.string(),
+});
+
+export const ViewSharedFolderChildrenSchema = z.object({
+  token: z.string(),
+  folderIds: z.array(z.string()),
+});
+
+export const ViewSharedFolderChildFileSchema = z
+  .object({
+    fileId: z.string(),
+  })
+  .and(ViewSharedFolderChildrenSchema);

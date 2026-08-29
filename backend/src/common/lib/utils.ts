@@ -8,6 +8,10 @@ export function serializeBigInt<T>(value: T): T {
   );
 }
 
-export function buildShareUrl(token: string): string {
+export function buildFileShareUrl(token: string): string {
   return `${env.FRONTEND_URL}/share/${token}`;
+}
+
+export function buildFolderShareUrl(token: string): string {
+  return `${env.FRONTEND_URL}/share/${token}/folder`;
 }

@@ -6,10 +6,31 @@ import Image from "next/image";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../ui/tooltip";
 import FileDropdownMenu from "../dropdowns/file-dropdown-menu";
 
-export default function FileCard({ name, mimeType, ...rest }: Readonly<File_>) {
+type FileCardProps = File_ & {
+  shared?: boolean;
+  handlePreview?: (file: File_) => void;
+};
+
+export default function FileCard({
+  name,
+  mimeType,
+  shared = false,
+  handlePreview,
+  ...rest
+}: Readonly<FileCardProps>) {
   const openPreviewDialog = useDrive((state) => state.openPreviewDialog);
 
   function handleOpenPreviewDialog() {
+    if (shared && handlePreview) {
+      handlePreview({
+        name,
+        mimeType,
+        ...rest,
+      });
+
+      return;
+    }
+
     openPreviewDialog({
       name,
       mimeType,
@@ -45,6 +66,7 @@ export default function FileCard({ name, mimeType, ...rest }: Readonly<File_>) {
           mimeType,
           ...rest,
         }}
+        shared={shared}
       />
     </div>
   );

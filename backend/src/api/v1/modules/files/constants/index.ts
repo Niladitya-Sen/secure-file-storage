@@ -5,6 +5,7 @@ export const ALLOWED_FILE_TYPES: Record<string, string[]> = {
   png: ["image/png"],
   svg: ["image/svg+xml"],
   gif: ["image/gif"],
+  webp: ["image/webp"],
   pdf: ["application/pdf"],
   doc: [
     "application/msword",

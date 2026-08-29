@@ -7,11 +7,24 @@ import type {
   DeleteFolderDto,
   ListFolderContentsDto,
   RenameFolderDto,
+  ShareFolderDto,
+  ViewSharedFolderChildFileSchemaDto,
+  ViewSharedFolderDto,
 } from "./folders.dto.ts";
-import { buildShareUrl } from "../../../../common/lib/utils.ts";
+import {
+  buildFileShareUrl,
+  buildFolderShareUrl,
+} from "../../../../common/lib/utils.ts";
 import BadRequestError from "../../../../common/errors/BadRequestError.ts";
+import S3StorageService from "../storage/services/S3StorageService.ts";
 
 class FolderService {
+  private readonly storageService;
+
+  constructor() {
+    this.storageService = new S3StorageService();
+  }
+
   async createFolder(data: CreateFolderDto): Promise<void> {
     const parentFolder = data.parentFolderId
       ? await prisma.folder.findUnique({
@@ -151,7 +164,14 @@ class FolderService {
     const [folders, files] = await prisma.$transaction([
       prisma.folder.findMany({
         where: { ownerId, parentId: folderId ?? null },
-        select: { id: true, name: true, path: true, createdAt: true },
+        select: {
+          id: true,
+          name: true,
+          path: true,
+          createdAt: true,
+          visibility: true,
+          folderShare: { select: { token: true } },
+        },
         orderBy: { createdAt: "desc" },
       }),
       prisma.file.findMany({
@@ -175,12 +195,15 @@ class FolderService {
 
     return {
       path: folderId ? folder?.path : [],
-      folders,
+      folders: folders.map(({ folderShare, ...folder }) => ({
+        ...folder,
+        shareUrl: folderShare ? buildFolderShareUrl(folderShare.token) : null,
+      })),
       files: files.map(({ fileShare, ...file }) => ({
         ...file,
         viewUrl: `/files/${file.id}/view`,
         downloadUrl: `/files/${file.id}/download`,
-        shareUrl: fileShare ? buildShareUrl(fileShare.token) : null,
+        shareUrl: fileShare ? buildFileShareUrl(fileShare.token) : null,
       })),
     };
   }
@@ -233,6 +256,287 @@ class FolderService {
     await prisma.folder.delete({
       where: { id: folderId },
     });
+  }
+
+  async shareFolder({ folderId, ownerId }: ShareFolderDto) {
+    const folder = await prisma.folder.findUnique({
+      where: { id: folderId, ownerId },
+      select: { id: true, name: true, path: true, visibility: true },
+    });
+
+    if (!folder) {
+      throw new NotFoundError("Folder not found");
+    }
+
+    if (folder.visibility === "PUBLIC") {
+      throw new BadRequestError("Folder is already public");
+    }
+
+    const token = crypto.randomUUID();
+
+    await prisma.$transaction([
+      prisma.folderShare.create({
+        data: {
+          folderId: folder.id,
+          token,
+        },
+      }),
+      prisma.folder.update({
+        where: { id: folder.id },
+        data: { visibility: "PUBLIC" },
+      }),
+    ]);
+
+    return {
+      shareUrl: buildFolderShareUrl(token),
+    };
+  }
+
+  async unshareFolder({ folderId, ownerId }: ShareFolderDto) {
+    const folder = await prisma.folder.findUnique({
+      where: { id: folderId, ownerId },
+      select: { id: true, name: true, visibility: true },
+    });
+
+    if (!folder) {
+      throw new NotFoundError("Folder not found");
+    }
+
+    if (folder.visibility === "PRIVATE") {
+      throw new BadRequestError("Folder is already private");
+    }
+
+    await prisma.$transaction([
+      prisma.folderShare.delete({
+        where: { folderId },
+      }),
+      prisma.folder.update({
+        where: { id: folder.id },
+        data: { visibility: "PRIVATE" },
+      }),
+    ]);
+  }
+
+  async listSharedFolderContents({ folderIds, token }: ViewSharedFolderDto) {
+    const folderShare = await prisma.folderShare.findUnique({
+      where: { token },
+      select: {
+        folderId: true,
+      },
+    });
+
+    if (!folderShare) {
+      throw new NotFoundError("Shared folder not found");
+    }
+
+    if (folderIds.length === 0) {
+      const folder = await prisma.folder.findUnique({
+        where: { id: folderShare.folderId },
+        select: {
+          id: true,
+          name: true,
+          path: true,
+          visibility: true,
+          createdAt: true,
+        },
+      });
+
+      return {
+        path: [],
+        files: [],
+        folders: folder
+          ? [
+              {
+                ...folder,
+                shareUrl: buildFolderShareUrl(token),
+              },
+            ]
+          : [],
+      };
+    }
+
+    const lastChildFolderId = folderIds[folderIds.length - 1];
+
+    const lastChildFolder = await prisma.folder.findUnique({
+      where: { id: lastChildFolderId },
+      select: {
+        path: true,
+      },
+    });
+
+    if (!lastChildFolder) {
+      throw new NotFoundError("Folder not found");
+    }
+
+    const rootIdx = (lastChildFolder.path as FolderPath).findIndex(
+      (item) => item.id === folderShare.folderId,
+    );
+
+    if (rootIdx === -1) {
+      throw new BadRequestError("Folder not found");
+    }
+
+    const isDescendant = (lastChildFolder.path as FolderPath)
+      .slice(rootIdx)
+      .every((item, index) => item.id === folderIds[index]);
+
+    if (!isDescendant) {
+      throw new BadRequestError("Folder not found");
+    }
+
+    const [folders, files] = await prisma.$transaction([
+      prisma.folder.findMany({
+        where: { parentId: lastChildFolderId },
+        select: {
+          id: true,
+          name: true,
+          path: true,
+          createdAt: true,
+          visibility: true,
+          folderShare: {
+            select: {
+              token: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.file.findMany({
+        where: { folderId: lastChildFolderId },
+        select: {
+          id: true,
+          name: true,
+          mimeType: true,
+          size: true,
+          createdAt: true,
+          visibility: true,
+          fileShare: {
+            select: {
+              token: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    return {
+      path: (lastChildFolder.path as FolderPath).slice(rootIdx),
+      folders: folders.map(({ folderShare, ...folder }) => ({
+        ...folder,
+        shareUrl: folderShare ? buildFolderShareUrl(folderShare.token) : null,
+      })),
+      files: files.map(({ fileShare, ...file }) => ({
+        ...file,
+        viewUrl:
+          (lastChildFolder.path as FolderPath)
+            .slice(rootIdx)
+            .map((item) => item.id)
+            .join("/") + `/file/${file.id}`,
+        downloadUrl:
+          (lastChildFolder.path as FolderPath)
+            .slice(rootIdx)
+            .map((item) => item.id)
+            .join("/") + `/file/${file.id}`,
+        shareUrl: fileShare ? buildFileShareUrl(fileShare.token) : null,
+      })),
+    };
+  }
+
+  async listSharedFolders({ ownerId }: { ownerId: number }) {
+    const folders = await prisma.folder.findMany({
+      where: { ownerId, visibility: "PUBLIC" },
+      select: {
+        id: true,
+        name: true,
+        visibility: true,
+        path: true,
+        createdAt: true,
+        folderShare: { select: { token: true, createdAt: true } },
+      },
+    });
+
+    return folders.map(({ folderShare, ...folder }) => ({
+      ...folder,
+      shareUrl: folderShare ? buildFolderShareUrl(folderShare.token) : null,
+      sharedAt: folderShare?.createdAt ?? null,
+    }));
+  }
+
+  async viewSharedFolderChildFile({
+    fileId,
+    folderIds,
+    token,
+  }: ViewSharedFolderChildFileSchemaDto) {
+    const folderShare = await prisma.folderShare.findUnique({
+      where: { token },
+      select: {
+        folderId: true,
+      },
+    });
+
+    if (!folderShare) {
+      throw new NotFoundError("Shared folder not found");
+    }
+
+    if (folderIds.length === 0) {
+      throw new BadRequestError("Invalid folder path");
+    }
+
+    const lastChildFolderId = folderIds[folderIds.length - 1];
+
+    const lastChildFolder = await prisma.folder.findUnique({
+      where: { id: lastChildFolderId },
+      select: {
+        path: true,
+      },
+    });
+
+    if (!lastChildFolder) {
+      throw new NotFoundError("Folder not found");
+    }
+
+    const rootIdx = (lastChildFolder.path as FolderPath).findIndex(
+      (item) => item.id === folderShare.folderId,
+    );
+
+    if (rootIdx === -1) {
+      throw new BadRequestError("Folder not found");
+    }
+
+    const isDescendant = (lastChildFolder.path as FolderPath)
+      .slice(rootIdx)
+      .every((item, index) => item.id === folderIds[index]);
+
+    if (!isDescendant) {
+      throw new BadRequestError("Folder not found");
+    }
+
+    const file = await prisma.file.findUnique({
+      where: { id: fileId },
+      select: {
+        id: true,
+        name: true,
+        mimeType: true,
+        size: true,
+        createdAt: true,
+        visibility: true,
+        storageKey: true,
+      },
+    });
+
+    if (!file) {
+      throw new NotFoundError("File not found");
+    }
+
+    const downloadUrl = await this.storageService.getDownloadUrl(
+      file.storageKey,
+    );
+
+    return {
+      file,
+      downloadUrl,
+    };
   }
 }
 

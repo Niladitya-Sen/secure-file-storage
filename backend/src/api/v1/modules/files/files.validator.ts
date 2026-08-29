@@ -5,7 +5,7 @@ export const UploadFileSchema = z
   .object({
     folderId: z.string().optional(),
     fileName: z.string().min(1, "File name is required"),
-    contentType: z.string().min(1, "Content type is required"),
+    contentType: z.string().min(1, "This file type is not allowed"),
     size: z.number().positive(),
   })
   .superRefine((data, ctx) => {

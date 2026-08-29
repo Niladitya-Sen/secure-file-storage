@@ -38,6 +38,11 @@ export type File = Prisma.FileModel
  */
 export type FileShare = Prisma.FileShareModel
 /**
+ * Model FolderShare
+ * 
+ */
+export type FolderShare = Prisma.FolderShareModel
+/**
  * Model RefreshToken
  * 
  */

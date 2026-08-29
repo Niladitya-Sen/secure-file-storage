@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { useHandleEnterPress } from "@/hooks/use-handle-enter-press";
 import { useDrive } from "@/store/drive-store";
 import { useEffect, useState } from "react";
 
@@ -35,6 +36,12 @@ export default function RenameFileOrFolderDialog() {
       setNewName(folderToRename.name);
     }
   }, [fileToRename?.name, folderToRename?.name]);
+
+  useHandleEnterPress(() => {
+    if (open) {
+      handleRename();
+    }
+  });
 
   async function handleRename() {
     if (!newName.trim()) {

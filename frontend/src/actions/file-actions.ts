@@ -1,4 +1,5 @@
 import { toast } from "@/components/ui/toast";
+import { MAX_CONCURRENT_UPLOADS, MAX_FILE_SIZE } from "@/constants";
 import authFetch from "@/lib/auth-fetch";
 import { copyToClipboard } from "@/lib/utils";
 import { useDrive } from "@/store/drive-store";
@@ -10,6 +11,14 @@ type UploadOptions = {
 };
 
 export async function uploadFile({ file, folderId }: UploadOptions) {
+  if (file.size > MAX_FILE_SIZE) {
+    useDrive.getState().updateUploadFileState(file.name, "error");
+    useDrive
+      .getState()
+      .addUploadFileError(file.name, "File size exceeds 100MB limit");
+    return;
+  }
+
   const [data, error] = await authFetch<{
     url: string;
     fields: {
@@ -30,6 +39,12 @@ export async function uploadFile({ file, folderId }: UploadOptions) {
 
   if (error || !data) {
     useDrive.getState().updateUploadFileState(file.name, "error");
+    useDrive
+      .getState()
+      .addUploadFileError(
+        file.name,
+        error?.message || "An unknown error occurred",
+      );
     return;
   }
 
@@ -44,15 +59,18 @@ export async function uploadFile({ file, folderId }: UploadOptions) {
         resolve(xhr.responseText);
       } else {
         useDrive.getState().updateUploadFileState(file.name, "error");
+        useDrive.getState().addUploadFileError(file.name, xhr.responseText);
         reject(new Error(xhr.responseText));
       }
     };
 
     xhr.onerror = () => {
+      useDrive.getState().addUploadFileError(file.name, "Network error");
       reject(new Error("Network error"));
     };
 
     xhr.onabort = () => {
+      useDrive.getState().addUploadFileError(file.name, "Upload cancelled");
       reject(new Error("Upload cancelled"));
     };
 
@@ -77,7 +95,6 @@ export async function uploadFiles({
   folderId?: string;
   onConcurrentUploadComplete?: () => void;
 }) {
-  const MAX_CONCURRENT_UPLOADS = 3;
   let currentIndex = 0;
 
   useDrive.getState().setUploadFileState(

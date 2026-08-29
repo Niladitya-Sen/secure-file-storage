@@ -26,6 +26,7 @@ type DriveStore = {
   closeRenameDialog: () => void;
 
   uploadFileState: Record<string, "uploading" | "success" | "error">;
+  uploadFilesError: Record<string, string>;
   setUploadFileState: (
     state: Record<string, "uploading" | "success" | "error">,
   ) => void;
@@ -33,6 +34,9 @@ type DriveStore = {
     fileName: string,
     state: "uploading" | "success" | "error",
   ) => void;
+  setUploadFilesError: (error: Record<string, string>) => void;
+  addUploadFileError: (fileName: string, error: string) => void;
+  removeAllUploadFileErrors: () => void;
 };
 
 export const useDrive = create<DriveStore>((set) => ({
@@ -86,6 +90,7 @@ export const useDrive = create<DriveStore>((set) => ({
     }),
 
   uploadFileState: {},
+  uploadFilesError: {},
   setUploadFileState: (
     state: Record<string, "uploading" | "success" | "error">,
   ) => set({ uploadFileState: state }),
@@ -99,4 +104,14 @@ export const useDrive = create<DriveStore>((set) => ({
         [fileName]: state,
       },
     })),
+  setUploadFilesError: (error: Record<string, string>) =>
+    set({ uploadFilesError: error }),
+  addUploadFileError: (fileName: string, error: string) =>
+    set((prevState) => ({
+      uploadFilesError: {
+        ...prevState.uploadFilesError,
+        [fileName]: error,
+      },
+    })),
+  removeAllUploadFileErrors: () => set({ uploadFilesError: {} }),
 }));

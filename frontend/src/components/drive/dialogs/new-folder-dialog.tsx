@@ -14,6 +14,7 @@ import { Input } from "../../ui/input";
 import { useDrive } from "@/store/drive-store";
 import { useCreateFolderMutation } from "@/actions/folder-actions";
 import { Spinner } from "../../ui/spinner";
+import { useHandleEnterPress } from "@/hooks/use-handle-enter-press";
 
 export default function NewFolderDialog() {
   const open = useDrive((state) => state.openNewFolderDialog);
@@ -21,6 +22,12 @@ export default function NewFolderDialog() {
   const onOpenChange = useDrive((state) => state.setOpenNewFolderDialog);
   const createFolderMutation = useCreateFolderMutation();
   const [folderName, setFolderName] = useState("");
+
+  useHandleEnterPress(() => {
+    if (open) {
+      handleCreateFolder();
+    }
+  });
 
   async function handleCreateFolder() {
     if (!folderName) {

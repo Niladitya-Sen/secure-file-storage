@@ -161,6 +161,13 @@ export type UuidNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedUuidNullableFilter<$PrismaModel> | string | null
 }
 
+export type EnumFolderVisibilityFilter<$PrismaModel = never> = {
+  equals?: $Enums.FolderVisibility | Prisma.EnumFolderVisibilityFieldRefInput<$PrismaModel>
+  in?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFolderVisibilityFilter<$PrismaModel> | $Enums.FolderVisibility
+}
+
 export type JsonFilter<$PrismaModel = never> =
 | Prisma.PatchUndefined<
     Prisma.Either<Required<JsonFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -213,6 +220,16 @@ export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
+}
+
+export type EnumFolderVisibilityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FolderVisibility | Prisma.EnumFolderVisibilityFieldRefInput<$PrismaModel>
+  in?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFolderVisibilityWithAggregatesFilter<$PrismaModel> | $Enums.FolderVisibility
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFolderVisibilityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFolderVisibilityFilter<$PrismaModel>
 }
 
 export type JsonWithAggregatesFilter<$PrismaModel = never> =
@@ -469,6 +486,13 @@ export type NestedUuidNullableFilter<$PrismaModel = never> = {
   not?: Prisma.NestedUuidNullableFilter<$PrismaModel> | string | null
 }
 
+export type NestedEnumFolderVisibilityFilter<$PrismaModel = never> = {
+  equals?: $Enums.FolderVisibility | Prisma.EnumFolderVisibilityFieldRefInput<$PrismaModel>
+  in?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFolderVisibilityFilter<$PrismaModel> | $Enums.FolderVisibility
+}
+
 export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -495,6 +519,16 @@ export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedStringNullableFilter<$PrismaModel>
   _max?: Prisma.NestedStringNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumFolderVisibilityWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.FolderVisibility | Prisma.EnumFolderVisibilityFieldRefInput<$PrismaModel>
+  in?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  notIn?: $Enums.FolderVisibility[] | Prisma.ListEnumFolderVisibilityFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumFolderVisibilityWithAggregatesFilter<$PrismaModel> | $Enums.FolderVisibility
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumFolderVisibilityFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumFolderVisibilityFilter<$PrismaModel>
 }
 
 export type NestedJsonFilter<$PrismaModel = never> =

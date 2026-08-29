@@ -27,8 +27,17 @@ import {
   Share2,
   Trash2,
 } from "lucide-react";
+import { useParams } from "next/navigation";
 
-export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
+type FileDropdownMenuProps = {
+  file: File_;
+  shared?: boolean;
+};
+
+export default function FileDropdownMenu({
+  file,
+  shared = false,
+}: Readonly<FileDropdownMenuProps>) {
   const openPreviewDialog = useDrive((state) => state.openPreviewDialog);
   const currentFolderId = useDrive((state) => state.currentFolderId);
   const openFileDeleteDialog = useDrive((state) => state.openFileDeleteDialog);
@@ -36,6 +45,8 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
 
   const shareFileMutation = useShareFileMutation();
   const unshareFileMutation = useUnshareFileMutation();
+
+  const params = useParams();
 
   function handleOpenPreviewDialog() {
     openPreviewDialog(file);
@@ -50,6 +61,10 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
   }
 
   async function handleShare() {
+    if (shared) {
+      return;
+    }
+
     await shareFileMutation.mutateAsync({
       fileId: file.id,
       folderId: currentFolderId || undefined,
@@ -57,6 +72,10 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
   }
 
   async function handleUnshare() {
+    if (shared) {
+      return;
+    }
+
     await unshareFileMutation.mutateAsync({
       fileId: file.id,
       folderId: currentFolderId || undefined,
@@ -70,10 +89,14 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
   }
 
   async function handleFileDownload() {
+    const downloadUrl = shared
+      ? `/folders/${params.token}/shared/${file.downloadUrl}`
+      : file.downloadUrl;
+
     const [data, error] = await authFetch<{
       file: File_;
       downloadUrl: string;
-    }>(file.downloadUrl);
+    }>(downloadUrl);
 
     if (error) {
       throw error;
@@ -115,28 +138,9 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={handleFileDownload}>
-            <Download />
-            Download
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleRename}>
-            <Edit3 />
-            Rename
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          {file.visibility === "PRIVATE" ? (
-            <DropdownMenuItem
-              disabled={shareFileMutation.isPending}
-              onClick={handleShare}
-            >
-              {shareFileMutation.isPending ? <Spinner /> : <Share2 />}
-              Share
-            </DropdownMenuItem>
-          ) : (
-            <>
+        {shared ? (
+          <DropdownMenuGroup>
+            {file.visibility === "PUBLIC" && (
               <DropdownMenuItem
                 disabled={unshareFileMutation.isPending}
                 onClick={handleCopyShareLink}
@@ -144,20 +148,63 @@ export default function FileDropdownMenu({ file }: Readonly<{ file: File_ }>) {
                 <Copy />
                 Copy share link
               </DropdownMenuItem>
-              <DropdownMenuItem
-                disabled={unshareFileMutation.isPending}
-                onClick={handleUnshare}
-              >
-                {unshareFileMutation.isPending ? <Spinner /> : <CircleOff />}
-                Revoke share link
+            )}
+            <DropdownMenuItem onClick={handleFileDownload}>
+              <Download />
+              Download
+            </DropdownMenuItem>
+          </DropdownMenuGroup>
+        ) : (
+          <>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={handleFileDownload}>
+                <Download />
+                Download
               </DropdownMenuItem>
-            </>
-          )}
-          <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-            <Trash2 />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+              <DropdownMenuItem onClick={handleRename}>
+                <Edit3 />
+                Rename
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              {file.visibility === "PRIVATE" ? (
+                <DropdownMenuItem
+                  disabled={shareFileMutation.isPending}
+                  onClick={handleShare}
+                >
+                  {shareFileMutation.isPending ? <Spinner /> : <Share2 />}
+                  Share
+                </DropdownMenuItem>
+              ) : (
+                <>
+                  <DropdownMenuItem
+                    disabled={unshareFileMutation.isPending}
+                    onClick={handleCopyShareLink}
+                  >
+                    <Copy />
+                    Copy share link
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    disabled={unshareFileMutation.isPending}
+                    onClick={handleUnshare}
+                  >
+                    {unshareFileMutation.isPending ? (
+                      <Spinner />
+                    ) : (
+                      <CircleOff />
+                    )}
+                    Revoke share link
+                  </DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuItem variant="destructive" onClick={handleDelete}>
+                <Trash2 />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

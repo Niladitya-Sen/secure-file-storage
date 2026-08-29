@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import BadRequestError from "../../../../common/errors/BadRequestError.ts";
 import NotFoundError from "../../../../common/errors/NotFoundError.ts";
 import { prisma } from "../../../../common/lib/prisma.ts";
-import { buildShareUrl } from "../../../../common/lib/utils.ts";
+import { buildFileShareUrl } from "../../../../common/lib/utils.ts";
 import S3StorageService from "../storage/services/S3StorageService.ts";
 import type { RenameFileDTO, UploadFileDTO } from "./files.dto.ts";
 
@@ -141,9 +141,7 @@ class FileService {
     }
 
     if (file.visibility === "PUBLIC") {
-      return {
-        shareUrl: buildShareUrl(file.fileShare!.token),
-      };
+      throw new BadRequestError("File is already public");
     }
 
     const token = crypto.randomUUID();
@@ -162,7 +160,7 @@ class FileService {
     ]);
 
     return {
-      shareUrl: buildShareUrl(token),
+      shareUrl: buildFileShareUrl(token),
     };
   }
 
@@ -258,7 +256,7 @@ class FileService {
       ...file,
       viewUrl: `/files/${file.id}/view`,
       downloadUrl: `/files/${file.id}/download`,
-      shareUrl: fileShare ? buildShareUrl(fileShare.token) : null,
+      shareUrl: fileShare ? buildFileShareUrl(fileShare.token) : null,
       sharedAt: fileShare?.createdAt || null,
     }));
   }
