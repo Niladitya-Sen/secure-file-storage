@@ -56,7 +56,7 @@ export default function SharedFiles() {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <Navbar component={<p className="text-base">Shared Files</p>} />
+      <Navbar component={<p className="text-base">Shared</p>} />
       <Tabs
         defaultValue="shared-files"
         className="flex flex-col flex-1 overflow-hidden px-4 pt-4"
