@@ -67,6 +67,7 @@ export default function FileCard({
           ...rest,
         }}
         shared={shared}
+        handlePreview={handlePreview}
       />
     </div>
   );

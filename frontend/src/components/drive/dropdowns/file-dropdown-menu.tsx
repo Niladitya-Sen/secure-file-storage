@@ -32,11 +32,13 @@ import { useParams } from "next/navigation";
 type FileDropdownMenuProps = {
   file: File_;
   shared?: boolean;
+  handlePreview?: (file: File_) => void;
 };
 
 export default function FileDropdownMenu({
   file,
   shared = false,
+  handlePreview,
 }: Readonly<FileDropdownMenuProps>) {
   const openPreviewDialog = useDrive((state) => state.openPreviewDialog);
   const currentFolderId = useDrive((state) => state.currentFolderId);
@@ -49,6 +51,10 @@ export default function FileDropdownMenu({
   const params = useParams();
 
   function handleOpenPreviewDialog() {
+    if (shared && handlePreview) {
+      handlePreview(file);
+    }
+
     openPreviewDialog(file);
   }
 

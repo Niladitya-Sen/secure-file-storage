@@ -22,7 +22,7 @@ export default function ViewFile({
               "object-contain transition-opacity",
               isLoading && "opacity-0 z-0",
             )}
-            onLoadingComplete={() => setIsLoading(false)}
+            onLoad={() => setIsLoading(false)}
           />
           <Spinner
             className={cn(
