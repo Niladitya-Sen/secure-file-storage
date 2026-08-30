@@ -1,17 +1,38 @@
+import { cn } from "@/lib/utils";
 import { FileWarning } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { Spinner } from "../ui/spinner";
 
 export default function ViewFile({
   mimeType,
   url,
 }: Readonly<{ mimeType: string; url: string }>) {
   if (mimeType.startsWith("image/")) {
-    return (
-      <div className="relative w-full h-full">
-        <Image src={url} alt="Preview" fill className="object-contain" />
-      </div>
-    );
+    return (() => {
+      const [isLoading, setIsLoading] = useState(true);
+
+      return (
+        <div className="relative w-full h-full">
+          <Image
+            src={url}
+            alt="Preview"
+            fill
+            className={cn(
+              "object-contain transition-opacity",
+              isLoading && "opacity-0 z-0",
+            )}
+            onLoadingComplete={() => setIsLoading(false)}
+          />
+          <Spinner
+            className={cn(
+              "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8",
+              !isLoading && "hidden",
+            )}
+          />
+        </div>
+      );
+    })();
   } else if (mimeType.startsWith("video/")) {
     return <video src={url} controls className="object-contain" />;
   } else if (mimeType.startsWith("audio/")) {
